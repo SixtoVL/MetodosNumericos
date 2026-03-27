@@ -1,7 +1,18 @@
-# Entornos virtuales
+# Node.js / React (Frontend)
+node_modules/
+dist/
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+.stylelintcache
+
+# Entornos virtuales (Backend)
 venv/
 env/
-.env
+# .env (Rastreado por Git según petición del usuario)
 
 # Caché de Python
 __pycache__/
@@ -12,13 +23,13 @@ __pycache__/
 # Archivos de configuración de IDEs
 .vscode/
 .idea/
+.DS_Store
 
-# Datos temporales
+# Datos temporales y de prueba
 *.log
 newton_prueba.json
 test_newton.py
 
-# Resultados de compilación (si hubiera)
-dist/
+# Resultados de compilación y empaquetado
 build/
 *.egg-info/
