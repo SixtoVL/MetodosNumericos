@@ -1,0 +1,6 @@
+{
+  "funciones": ["x**2 - 2"],
+  "punto_inicial": [1.0],
+  "tolerancia": 0.0001,
+  "iteraciones": 10
+}
