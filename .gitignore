@@ -1,0 +1,24 @@
+# Entornos virtuales
+venv/
+env/
+.env
+
+# Caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de configuración de IDEs
+.vscode/
+.idea/
+
+# Datos temporales
+*.log
+newton_prueba.json
+test_newton.py
+
+# Resultados de compilación (si hubiera)
+dist/
+build/
+*.egg-info/
