@@ -1,0 +1,134 @@
+.sidebar {
+  width: 300px;
+  height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2000;
+  /* El menú siempre empieza fuera de la pantalla */
+  transform: translateX(-100%);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
+  border-right: 1px solid #f1f5f9;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+  box-shadow: 20px 0 80px rgba(0, 0, 0, 0.15);
+}
+
+.logo {
+  padding: 2.5rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.logoIcon {
+  width: 45px;
+  height: 45px;
+  background: #2563eb;
+  color: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.closeBtn {
+  background: #f1f5f9;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.closeBtn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.nav {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+}
+
+.navGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.groupLabel {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding-left: 1rem;
+}
+
+.nav a, .lockedLink {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 600;
+  border-radius: 14px;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.nav a:hover {
+  background: #f8fafc;
+  color: #2563eb;
+}
+
+.active {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+}
+
+.methodTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  padding-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.subMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-left: 1.5rem;
+  padding-left: 1rem;
+  border-left: 2px solid #f1f5f9;
+}
+
+.footer {
+  padding: 1.5rem;
+  border-top: 1px solid #f8fafc;
+}

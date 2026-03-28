@@ -1,35 +1,41 @@
 .container {
   background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  margin-top: 2rem;
+  padding: 1.25rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+  margin-top: 1rem;
+  width: 100%;
 }
 
 .title {
-  font-size: 1.125rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   color: #1e293b;
   margin-bottom: 1rem;
 }
 
 .tableWrapper {
-  overflow-x: auto;
+  overflow-x: auto; /* Scroll horizontal obligatorio para tablas */
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   text-align: left;
+  min-width: 600px; /* Asegura que la tabla no se comprima demasiado */
 }
 
 .table th {
   background: #f8fafc;
   padding: 0.75rem 1rem;
   color: #64748b;
-  font-weight: 600;
+  font-weight: 700;
   border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .table td {
@@ -37,8 +43,9 @@
   border-bottom: 1px solid #f1f5f9;
   color: #334155;
   font-family: 'JetBrains Mono', monospace;
+  white-space: nowrap;
 }
 
 .table tr:hover {
-  background: #f1f5f9;
+  background: #f8fafc;
 }
