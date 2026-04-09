@@ -10,8 +10,11 @@ import styles from './NewtonPage.module.css';
 import clsx from 'clsx';
 
 export const NewtonPage: React.FC = () => {
-  const mutation = useNewton();
-  const { data, isPending, isError, error } = mutation;
+  const { mutation, lastResult, formValues } = useNewton();
+  const { isPending, isError, error } = mutation;
+  
+  // Priorizamos los datos de la mutación actual, si no existen, usamos el último resultado guardado
+  const data = mutation.data || lastResult;
 
   return (
     <div className={styles.pageContainer}>
@@ -24,7 +27,8 @@ export const NewtonPage: React.FC = () => {
         <aside>
           <NewtonForm 
             onSolve={(data) => mutation.mutate(data)} 
-            isPending={isPending} 
+            isPending={isPending}
+            initialValues={formValues}
           />
           
           {isPending && (
@@ -60,7 +64,11 @@ export const NewtonPage: React.FC = () => {
 
               <FormulaDisplay formulas={data.formulas} />
               
-              <PlotlyChart tabla={data.tabla} dimension={data.raiz.length} />
+              <PlotlyChart 
+                tabla={data.tabla} 
+                dimension={data.raiz.length} 
+                datosGrafica={data.datos_grafica}
+              />
 
               <IterationTable data={data.tabla} />
               

@@ -28,6 +28,14 @@ export interface ProcedimientoStep {
   error: number;
 }
 
+export interface GraficaData {
+  type: 'function_1d' | 'contour_2d';
+  x: number[];
+  y: number[];
+  z?: number[][];
+  name: string;
+}
+
 export interface NewtonResponse {
   raiz: number[];
   iteraciones: number;
@@ -36,5 +44,6 @@ export interface NewtonResponse {
   mensaje: string;
   formulas: Formulas;
   tabla: Tabla;
-  procedimiento: ProcedimientoStep[];
+  procedimiento: any[]; // Mantener flexible por ahora
+  datos_grafica?: GraficaData[];
 }
