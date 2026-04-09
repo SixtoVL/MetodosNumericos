@@ -87,67 +87,27 @@ def newton_method(funciones: list, punto_inicial: list, tolerancia: float, itera
         except Exception as e:
             return {"error": f"Error en iteración {i+1}: {str(e)}", "tabla": {"cabecera": cabecera, "filas": filas}}
 
-    # 8. Generación de datos para gráficas (Solo para 1D y 2D por ahora)
-    datos_grafica = []
-    try:
-        if n_vars == 1:
-            # Generamos un rango inteligente basado en el punto inicial o la raíz
-            r = x[0]
-            # Tomamos un rango de ±3 unidades para ver bien la curva
-            x_vals = np.linspace(r - 3, r + 3, 300)
-            # Evaluamos la función en ese rango
-            y_vals = []
-            for xv in x_vals:
-                try:
-                    res = float(f_eval(xv))
-                    # Evitar valores infinitos o extremadamente grandes para Plotly
-                    if abs(res) > 1e10: y_vals.append(None)
-                    else: y_vals.append(res)
-                except:
-                    y_vals.append(None)
-                    
-            datos_grafica.append({
-                "type": "function_1d",
-                "x": x_vals.tolist(),
-                "y": y_vals,
-                "name": "f(x)"
-            })
-        elif n_vars == 2:
-            # Para 2D generamos curvas de nivel f(x,y)=0
-            r1, r2 = x[0], x[1]
-            grid_size = 50
-            x1_range = np.linspace(r1 - 2.5, r1 + 2.5, grid_size)
-            x2_range = np.linspace(r2 - 2.5, r2 + 2.5, grid_size)
-            X1, X2 = np.meshgrid(x1_range, x2_range)
-            
-            # Evaluamos cada función del sistema
-            for idx, f_s in enumerate(funciones):
-                Z = np.zeros((grid_size, grid_size))
-                for i in range(grid_size):
-                    for j in range(grid_size):
-                        try:
-                            val = f_eval(X1[i,j], X2[i,j])
-                            Z[i,j] = float(val[idx])
-                        except:
-                            Z[i,j] = np.nan
-                
-                datos_grafica.append({
-                    "type": "contour_2d",
-                    "x": x1_range.tolist(),
-                    "y": x2_range.tolist(),
-                    "z": Z.tolist(),
-                    "name": f"f_{idx+1}(x,y) = 0"
-                })
-    except Exception as e:
-        print(f"DEBUG: Error al generar datos de gráfica: {str(e)}")
-        pass
+    # 8. Generación de datos para GeoGebra (Strings limpios y con multiplicación explícita)
+    from helpers.parser_matematico import pre_procesar_implicit_mult
+    funciones_geogebra = []
+    for f_s in funciones:
+        # 1. Insertamos asteriscos automáticos (xy -> x*y)
+        f_limpia = pre_procesar_implicit_mult(f_s)
+        # 2. Traducimos variables técnicas a geométricas
+        f_g = f_limpia.replace("x_1", "x").replace("x_2", "y").replace("x_3", "z")
+        funciones_geogebra.append(f_g)
 
-    # 9. Devolvemos la respuesta enriquecida
+    # 9. Generación de datos para gráficas (Solo para 1D y 2D por ahora)
+    datos_grafica = []
+    # ... (mantenemos la lógica de datos_grafica por si acaso, pero priorizaremos funciones_geogebra)
+
+    # 10. Devolvemos la respuesta enriquecida
     return {
         "raiz": [round(float(v), 10) for v in x],
         "convergio": convergio,
         "mensaje": mensaje,
         "formulas": formula_latex,
+        "funciones_geogebra": funciones_geogebra, # Nuevo campo
         "tabla": {
             "cabecera": cabecera,
             "filas": filas

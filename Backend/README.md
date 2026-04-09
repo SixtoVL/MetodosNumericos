@@ -1,96 +1,31 @@
-# Métodos Numéricos Backend (FastAPI + SymPy)
+# Backend: Motor de Cálculo Analítico (Newton-Raphson)
 
-Este es un backend robusto y modular desarrollado con **FastAPI** para resolver problemas de métodos numéricos. Actualmente, cuenta con una implementación avanzada del método de **Newton-Raphson Analítico**, capaz de resolver tanto funciones de una variable como sistemas de ecuaciones no lineales de $n$-dimensiones.
+Este módulo proporciona el núcleo matemático para la resolución de sistemas de ecuaciones no lineales utilizando el método de Newton-Raphson con derivadas exactas.
 
-## 🚀 Características Principales
+## 🚀 Tecnologías y Librerías
+*   **FastAPI**: Framework de alto rendimiento para la API.
+*   **SymPy**: Biblioteca de matemáticas simbólicas para el cálculo del **Jacobiano Analítico**.
+*   **NumPy**: Utilizado para la evaluación numérica de alto rendimiento y resolución de sistemas lineales.
 
--   **Arquitectura Modular**: Estructura basada en patrones de diseño (Routes, Controllers, Methods, Helpers) para facilitar la escalabilidad.
--   **Cálculo Analítico (SymPy)**: Utiliza motores de cálculo simbólico para obtener derivadas y matrices Jacobianas exactas, eliminando errores de aproximación numérica.
--   **Soporte Multivariable**: Resuelve sistemas de $n$ ecuaciones con $n$ incógnitas de forma automática.
--   **Salida Enriquecida para UI**: 
-    -   Genera tablas de iteraciones clásicas.
-    -   Proporciona el **procedimiento detallado** paso a paso (evaluación de J y F).
-    -   Exporta fórmulas matemáticas en formato **LaTeX** para renderización profesional en el frontend.
--   **Validación de Datos**: Uso de Pydantic para asegurar que las entradas de la API sean correctas.
+## 🧠 Características Principales
 
----
+### 1. Cálculo Analítico Preciso
+A diferencia de los métodos que utilizan diferencias finitas para aproximar la derivada, este sistema utiliza **SymPy** para hallar la expresión exacta del Jacobiano. Esto garantiza una convergencia cuadrática real y evita errores de redondeo en la fase de derivación.
 
-## 🛠️ Tecnologías Utilizadas
+### 2. Parser Matemático Inteligente
+Implementa un pre-procesador basado en **Regex** que permite al usuario ingresar fórmulas de forma natural:
+*   Soporte para multiplicación implícita: `3x_1`, `x_1x_2` $\rightarrow$ `3*x_1`, `x_1*x_2`.
+*   Traducción automática para visualizadores: Genera una lista de `funciones_geogebra` donde las variables técnicas se mapean a `x, y, z`.
 
--   **Python 3.10+**
--   **FastAPI**: Framework web de alto rendimiento.
--   **SymPy**: Librería para matemáticas simbólicas (Parsing y Jacobianas).
--   **NumPy**: Operaciones vectoriales y resolución de sistemas lineales.
--   **Uvicorn**: Servidor ASGI para despliegue.
+### 3. Análisis de Error Exhaustivo
+El motor devuelve tres métricas de error por cada iteración:
+*   **Error Absoluto**: $||x_{k+1} - x_k||$ (distancia recorrida).
+*   **Error Relativo**: Normalizado por la magnitud de la solución.
+*   **Error Funcional**: $||f(x_k)||$ (qué tan cerca está la función de cero).
 
----
-
-## 📂 Estructura del Proyecto
-
-```text
-Backend/
-├── main.py                 # Punto de entrada de la aplicación
-├── server.py               # Configuración del servidor Uvicorn
-├── routes/                 # Definición de rutas (Endpoints)
-├── controllers/            # Lógica de orquestación de peticiones
-├── methods/                # Implementación de algoritmos numéricos
-├── helpers/                # Utilidades (Parser matemático, Jacobiano)
-├── schemas/                # Modelos de validación (Pydantic)
-├── requirements.txt        # Dependencias del proyecto
-└── newton.md               # Documentación técnica detallada del algoritmo
-```
-
----
-
-## ⚙️ Instalación y Configuración
-
-Sigue estos pasos para poner en marcha el servidor localmente:
-
-1.  **Clonar el repositorio:**
-    ```cmd
-    git clone <tu-url-del-repo>
-    cd Backend
-    ```
-
-2.  **Crear y activar el entorno virtual:**
-    ```cmd
-    python -m venv venv
-    venv\Scripts\activate  # Windows
-    source venv/bin/activate  # Linux/Mac
-    ```
-
-3.  **Instalar dependencias:**
-    ```cmd
-    pip install -r requirements.txt
-    ```
-
-4.  **Iniciar el servidor:**
-    ```cmd
-    python server.py
-    ```
-    *El servidor estará disponible en `http://127.0.0.1:8088` (o el puerto configurado).*
-
----
-
-## 📡 Documentación de la API
-
-### Newton-Raphson Analítico
-**Endpoint:** `POST /methods/newton`
-
-**Cuerpo de la Petición (JSON):**
-```json
-{
-  "funciones": ["x_1^2 + x_2^2 - 4", "exp(x_1) + x_2 - 1"],
-  "punto_inicial": [1.0, -1.0],
-  "tolerancia": 0.00001,
-  "iteraciones": 20
-}
-```
-
-**Respuesta (JSON):**
-La respuesta incluye la raíz encontrada, el estado de convergencia, las fórmulas en LaTeX y el objeto `procedimiento` con cada paso del cálculo.
-
----
-
-## 📖 Documentación Adicional
-Para detalles profundos sobre el funcionamiento matemático y el flujo interno del algoritmo de Newton, consulta el archivo [newton.md](./newton.md).
+## 📊 Estructura de la Respuesta
+El backend responde con un objeto JSON enriquecido que incluye:
+*   `raiz`: Vector solución.
+*   `formulas`: Representaciones en **LaTeX** del sistema y del Jacobiano.
+*   `procedimiento`: Traza completa de cada matriz y vector evaluado en cada paso.
+*   `funciones_geogebra`: Strings optimizados para renderizado gráfico.

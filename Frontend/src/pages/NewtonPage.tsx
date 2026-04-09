@@ -3,7 +3,7 @@ import { NewtonForm } from '../components/forms/NewtonForm';
 import { FormulaDisplay } from '../components/results/FormulaDisplay';
 import { IterationTable } from '../components/results/IterationTable';
 import { ProcedureStep } from '../components/visualizers/ProcedureStep';
-import { PlotlyChart } from '../components/visualizers/PlotlyChart';
+import { GeoGebraChart } from '../components/visualizers/GeoGebraChart';
 import { useNewton } from '../hooks/useNewton';
 import { Loader2, AlertCircle, CheckCircle2, Calculator } from 'lucide-react';
 import styles from './NewtonPage.module.css';
@@ -15,6 +15,10 @@ export const NewtonPage: React.FC = () => {
   
   // Priorizamos los datos de la mutación actual, si no existen, usamos el último resultado guardado
   const data = mutation.data || lastResult;
+
+  // Usamos SIEMPRE las funciones originales del formulario para GeoGebra
+  // ya que su sintaxis es más compatible que el LaTeX del backend
+  const currentFunciones = formValues?.funciones || data?.formulas.funciones.map(f => f.replace(/\\/g, '')) || [];
 
   return (
     <div className={styles.pageContainer}>
@@ -64,10 +68,10 @@ export const NewtonPage: React.FC = () => {
 
               <FormulaDisplay formulas={data.formulas} />
               
-              <PlotlyChart 
+              <GeoGebraChart 
                 tabla={data.tabla} 
                 dimension={data.raiz.length} 
-                datosGrafica={data.datos_grafica}
+                funciones={data.funciones_geogebra}
               />
 
               <IterationTable data={data.tabla} />

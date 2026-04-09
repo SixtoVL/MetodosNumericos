@@ -43,7 +43,8 @@ export interface NewtonResponse {
   convergio: boolean;
   mensaje: string;
   formulas: Formulas;
+  funciones_geogebra: string[]; // Nuevo campo del backend
   tabla: Tabla;
-  procedimiento: any[]; // Mantener flexible por ahora
+  procedimiento: any[]; 
   datos_grafica?: GraficaData[];
 }
