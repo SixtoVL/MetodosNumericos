@@ -1,5 +1,5 @@
 import numpy as np
-from helpers.calcular_jacobiano import calcular_jacobiano_analitico
+from .helpers.calcular_jacobiano import calcular_jacobiano_analitico
 
 def newton_method(funciones: list, punto_inicial: list, tolerancia: float, iteraciones: int):
     """
@@ -88,7 +88,7 @@ def newton_method(funciones: list, punto_inicial: list, tolerancia: float, itera
             return {"error": f"Error en iteración {i+1}: {str(e)}", "tabla": {"cabecera": cabecera, "filas": filas}}
 
     # 8. Generación de datos para GeoGebra (Strings limpios y con multiplicación explícita)
-    from helpers.parser_matematico import pre_procesar_implicit_mult
+    from .helpers.parser_matematico import pre_procesar_implicit_mult
     funciones_geogebra = []
     for f_s in funciones:
         # 1. Insertamos asteriscos automáticos (xy -> x*y)

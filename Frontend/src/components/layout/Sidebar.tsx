@@ -10,9 +10,14 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [isNewtonOpen, setIsNewtonOpen] = useState(true);
+  const [isFixedPointOpen, setIsFixedPointOpen] = useState(false);
 
   const toggleNewton = () => {
     setIsNewtonOpen(!isNewtonOpen);
+  };
+
+  const toggleFixedPoint = () => {
+    setIsFixedPointOpen(!isFixedPointOpen);
   };
 
   return (
@@ -37,6 +42,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         <div className={styles.navGroup}>
           <span className={styles.groupLabel}>Sistemas No Lineales</span>
+          
+          {/* Newton-Raphson */}
           <div 
             className={styles.methodTitle} 
             onClick={toggleNewton}
@@ -52,6 +59,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 <BookOpen size={18} /> Teoría
               </NavLink>
               <NavLink to="/metodos/newton/calculadora" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
+                <Calculator size={18} /> Calculadora
+              </NavLink>
+            </div>
+          )}
+
+          {/* Punto Fijo */}
+          <div 
+            className={styles.methodTitle} 
+            onClick={toggleFixedPoint}
+            style={{ cursor: 'pointer', userSelect: 'none', marginTop: '0.5rem' }}
+          >
+            {isFixedPointOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            Punto Fijo
+          </div>
+          
+          {isFixedPointOpen && (
+            <div className={styles.subMenu}>
+              <NavLink to="/metodos/punto-fijo/teoria" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
+                <BookOpen size={18} /> Teoría
+              </NavLink>
+              <NavLink to="/metodos/punto-fijo/calculadora" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
                 <Calculator size={18} /> Calculadora
               </NavLink>
             </div>

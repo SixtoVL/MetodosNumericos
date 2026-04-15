@@ -6,6 +6,7 @@ interface GeoGebraChartProps {
   tabla: Tabla;
   dimension: number;
   funciones: string[];
+  metodo?: 'newton' | 'punto-fijo';
 }
 
 declare global {
@@ -14,7 +15,7 @@ declare global {
   }
 }
 
-export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, funciones }) => {
+export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, funciones, metodo = 'newton' }) => {
   const containerId = "ggb-element";
   const containerRef = useRef<HTMLDivElement>(null);
   const appletRef = useRef<any>(null);
@@ -27,7 +28,6 @@ export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, 
 
     const filter = (args: any[], originalFn: Function) => {
       const msg = args.join(' ');
-      // Filtramos mensajes típicos de GeoGebra que ensucian la consola
       if (
         msg.includes('[LaTeX]') || 
         msg.includes('GeoGebra HTML5') || 
@@ -48,28 +48,16 @@ export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, 
     };
   }, []);
 
-  // Parche para evitar el error STATUS_ACCESS_VIOLATION bloqueando el zoom del navegador
   useEffect(() => {
     const preventBrowserZoom = (e: WheelEvent) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-      }
+      if (e.ctrlKey) e.preventDefault();
     };
-
     const container = containerRef.current;
-    if (container) {
-      container.addEventListener('wheel', preventBrowserZoom, { passive: false });
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener('wheel', preventBrowserZoom);
-      }
-    };
+    if (container) container.addEventListener('wheel', preventBrowserZoom, { passive: false });
+    return () => container?.removeEventListener('wheel', preventBrowserZoom);
   }, []);
 
   useEffect(() => {
-    // Limpiamos el contenedor antes de inyectar uno nuevo si cambia la dimensión
     if (containerRef.current) {
       containerRef.current.innerHTML = '';
       const ggbDiv = document.createElement('div');
@@ -101,45 +89,48 @@ export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, 
   }, [dimension]);
 
   useEffect(() => {
-    if (appletRef.current) {
-      updatePlot(appletRef.current);
-    }
-  }, [tabla, funciones]);
+    if (appletRef.current) updatePlot(appletRef.current);
+  }, [tabla, funciones, metodo]);
 
   const updatePlot = (api: any) => {
     try {
       api.reset();
+      const varsGeo = ["x", "y", "z"];
       
-      // 1. Lógica según Dimensión
       funciones.forEach((f, i) => {
         const fName = `f${i+1}`;
         try {
-          if (dimension === 1) {
-            api.evalCommand(`${fName}(x) = ${f}`);
-            api.setColor(fName, 37, 99, 235);
-          } 
-          else if (dimension === 2) {
-            api.evalCommand(`${fName}(x,y) = ${f}`);
+          const colors = [[37, 99, 235], [220, 38, 38], [16, 185, 129]];
+          const color = colors[i % colors.length];
+
+          if (metodo === 'punto-fijo') {
             const eqName = `eq${i+1}`;
-            api.evalCommand(`${eqName}: ${fName}(x,y) = 0`);
-            const colors = [[37, 99, 235], [220, 38, 38]];
-            const color = colors[i % colors.length];
+            // Graficar x = g1(x,y), y = g2(x,y)...
+            api.evalCommand(`${eqName}: ${varsGeo[i]} = ${f}`);
             api.setColor(eqName, color[0], color[1], color[2]);
             api.setLineThickness(eqName, 4);
-          }
-          else if (dimension === 3) {
-            const surfName = `surf${i+1}`;
-            api.evalCommand(`${surfName}: ${f} = 0`);
-            const colors = [[37, 99, 235], [220, 38, 38], [16, 185, 129]];
-            const color = colors[i % colors.length];
-            api.setColor(surfName, color[0], color[1], color[2]);
+          } else {
+            if (dimension === 1) {
+              api.evalCommand(`${fName}(x) = ${f}`);
+              api.setColor(fName, color[0], color[1], color[2]);
+            } else if (dimension === 2) {
+              api.evalCommand(`${fName}(x,y) = ${f}`);
+              const eqName = `eq${i+1}`;
+              api.evalCommand(`${eqName}: ${fName}(x,y) = 0`);
+              api.setColor(eqName, color[0], color[1], color[2]);
+              api.setLineThickness(eqName, 4);
+            } else if (dimension === 3) {
+              const surfName = `surf${i+1}`;
+              api.evalCommand(`${surfName}: ${f} = 0`);
+              api.setColor(surfName, color[0], color[1], color[2]);
+            }
           }
         } catch (err) {
           console.warn(`Error en GGB para ${fName}:`, err);
         }
       });
 
-      // 2. Trayectoria
+      // Trayectoria común
       const x1Idx = 1;
       const x2Idx = 2;
       const x3Idx = 3;
@@ -147,15 +138,11 @@ export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, 
 
       tabla.filas.forEach((fila, i) => {
         const xVal = (fila[x1Idx] as number).toFixed(10);
-        let yVal = "0";
-        let zVal = "0";
+        let yVal = dimension >= 2 ? (fila[x2Idx] as number).toFixed(10) : "0";
+        let zVal = dimension === 3 ? (fila[x3Idx] as number).toFixed(10) : "0";
 
-        if (dimension === 1) yVal = `f1(${xVal})`;
-        else if (dimension === 2) yVal = (fila[x2Idx] as number).toFixed(10);
-        else if (dimension === 3) {
-          yVal = (fila[x2Idx] as number).toFixed(10);
-          zVal = (fila[x3Idx] as number).toFixed(10);
-        }
+        // Caso especial 1D: y es f(x) o simplemente 0 para ver la recta
+        if (dimension === 1 && metodo === 'newton') yVal = `f1(${xVal})`;
 
         const pName = `P${i}`;
         api.evalCommand(`${pName} = (${xVal}, ${yVal}${dimension === 3 ? ',' + zVal : ''})`);
@@ -178,7 +165,7 @@ export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, 
         api.setPointSize(prevPointName, 8);
         api.setColor(prevPointName, 22, 163, 74);
         api.setLabelVisible(prevPointName, true);
-        api.setCaption(prevPointName, "Raiz");
+        api.setCaption(prevPointName, "Solución");
       }
 
       if (dimension < 3) api.setCoordSystem(-5, 5, -5, 5);
@@ -193,41 +180,29 @@ export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, 
     <div style={{ background: 'white', padding: '1rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#1e293b', margin: 0 }}>
-          Visualización Dinámica ({dimension}D)
+          Visualización Dinámica ({dimension}D) - {metodo === 'newton' ? 'Newton' : 'Punto Fijo'}
         </h3>
-        <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Prevención de Zoom activada</span>
       </div>
-      {/* Contenedor principal con referencia */}
       <div ref={containerRef} style={{ border: '1px solid #e2e8f0', borderRadius: '8px', minHeight: '550px' }}>
         <div id={containerId}></div>
       </div>
 
-      {/* Guía de Interpretación */}
-      <div style={{ 
-        marginTop: '1.5rem', 
-        padding: '1.25rem', 
-        background: '#f8fafc', 
-        borderRadius: '8px', 
-        borderLeft: '4px solid #2563eb' 
-      }}>
+      <div style={{ marginTop: '1.5rem', padding: '1.25rem', background: '#f8fafc', borderRadius: '8px', borderLeft: '4px solid #2563eb' }}>
         <h4 style={{ margin: '0 0 0.75rem 0', color: '#1e293b', fontSize: '1rem', fontWeight: 700 }}>
           ¿Qué representa esta gráfica?
         </h4>
         <ul style={{ margin: 0, paddingLeft: '1.2rem', color: '#475569', fontSize: '0.9rem', lineHeight: '1.6' }}>
           <li>
-            <strong>Funciones (<MathRenderer math="f_i = 0" />):</strong> Las curvas azules y rojas (o superficies en 3D) muestran dónde se cumple cada ecuación. La solución es el punto de intersección de todas ellas.
+            <strong>Funciones:</strong> {metodo === 'newton' 
+              ? 'Las curvas muestran donde f(x)=0. La raíz es la intersección.' 
+              : 'Las curvas muestran x = g(x,y). El punto fijo es donde se intersectan.'}
           </li>
           <li>
-            <strong>Trayectoria Newton:</strong> La línea quebrada roja muestra cómo el algoritmo "viaja" desde el punto inicial hacia la raíz en cada iteración.
+            <strong>Trayectoria:</strong> La línea quebrada roja muestra la evolución de las aproximaciones.
           </li>
           <li>
-            <strong>Raíz Encontrada:</strong> Marcada con una estrella verde, es el punto final donde el sistema ha convergido según la tolerancia definida.
+            <strong>Solución:</strong> La estrella verde marca el punto final de convergencia.
           </li>
-          {dimension === 3 && (
-            <li style={{ marginTop: '0.5rem', color: '#2563eb', fontWeight: 600 }}>
-              💡 Interacción 3D: Arrastra con el botón derecho para rotar y la rueda para hacer zoom sobre las superficies.
-            </li>
-          )}
         </ul>
       </div>
     </div>

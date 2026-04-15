@@ -1,4 +1,4 @@
-# 🧮 Sistema de Métodos Numéricos Avanzados
+#  Sistema de Métodos Numéricos Avanzados
 
 Este proyecto es una plataforma web robusta y profesional diseñada para resolver problemas complejos de ingeniería y matemáticas mediante métodos numéricos. Actualmente, el sistema cuenta con una implementación líder del **Método de Newton-Raphson Analítico** para sistemas de ecuaciones no lineales.
 
@@ -6,7 +6,7 @@ La plataforma se divide en un **Backend de alto rendimiento** (Python/FastAPI) y
 
 ---
 
-## 🌟 Características Principales
+##  Características Principales
 
 -   **Motor de Cálculo Simbólico**: Utiliza **SymPy** para obtener derivadas y matrices Jacobianas exactas, eliminando errores de aproximación en la fase de planteamiento.
 -   **Dashboard Científico**: Interfaz moderna con renderizado de fórmulas en **LaTeX** y gráficos interactivos con **Plotly.js**.
@@ -15,7 +15,7 @@ La plataforma se divide en un **Backend de alto rendimiento** (Python/FastAPI) y
 
 ---
 
-## 🛠️ Stack Tecnológico
+##  Stack Tecnológico
 
 ### **Backend (Motor de Cálculo)**
 -   **FastAPI**: Framework de alto rendimiento para la API.
@@ -32,7 +32,7 @@ La plataforma se divide en un **Backend de alto rendimiento** (Python/FastAPI) y
 
 ---
 
-## 📂 Estructura del Repositorio
+##  Estructura del Repositorio
 
 ```text
 MetodosNumericos/
@@ -43,7 +43,7 @@ MetodosNumericos/
 
 ---
 
-## 🚀 Instalación Rápida
+##  Instalación Rápida
 
 ### **1. Backend**
 ```bash
@@ -63,7 +63,7 @@ npm run dev
 
 ---
 
-## 🗺️ Hoja de Ruta (Roadmap)
+##  Hoja de Ruta (Roadmap)
 
 Este sistema está en constante evolución. Próximamente se integrarán los siguientes métodos y funcionalidades:
 
@@ -76,5 +76,5 @@ Este sistema está en constante evolución. Próximamente se integrarán los sig
 
 ---
 
-## 👨‍💻 Contribuciones e Integridad
+##  Contribuciones e Integridad
 El proyecto ha sido diseñado para ser una herramienta educativa y profesional de alta fidelidad, asegurando que cada resultado sea verificable a través de su traza de procedimiento detallada.

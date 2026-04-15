@@ -2,12 +2,12 @@
 
 Este módulo proporciona el núcleo matemático para la resolución de sistemas de ecuaciones no lineales utilizando el método de Newton-Raphson con derivadas exactas.
 
-## 🚀 Tecnologías y Librerías
+##  Tecnologías y Librerías
 *   **FastAPI**: Framework de alto rendimiento para la API.
 *   **SymPy**: Biblioteca de matemáticas simbólicas para el cálculo del **Jacobiano Analítico**.
 *   **NumPy**: Utilizado para la evaluación numérica de alto rendimiento y resolución de sistemas lineales.
 
-## 🧠 Características Principales
+##  Características Principales
 
 ### 1. Cálculo Analítico Preciso
 A diferencia de los métodos que utilizan diferencias finitas para aproximar la derivada, este sistema utiliza **SymPy** para hallar la expresión exacta del Jacobiano. Esto garantiza una convergencia cuadrática real y evita errores de redondeo en la fase de derivación.
@@ -23,7 +23,7 @@ El motor devuelve tres métricas de error por cada iteración:
 *   **Error Relativo**: Normalizado por la magnitud de la solución.
 *   **Error Funcional**: $||f(x_k)||$ (qué tan cerca está la función de cero).
 
-## 📊 Estructura de la Respuesta
+##  Estructura de la Respuesta
 El backend responde con un objeto JSON enriquecido que incluye:
 *   `raiz`: Vector solución.
 *   `formulas`: Representaciones en **LaTeX** del sistema y del Jacobiano.

@@ -10,7 +10,7 @@ Una aplicación moderna en React para la visualización y resolución de sistema
 *   **Lucide React**: Iconografía profesional.
 *   **XLSX (SheetJS)**: Exportación de datos a Excel.
 
-## 🌟 Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
 ### 1. Visualización Interactiva con GeoGebra
 *   **Detección Dinámica de Dimensión**: El sistema cambia automáticamente entre el motor **GeoGebra Classic (2D)** y **GeoGebra 3D**.
@@ -29,7 +29,7 @@ Una aplicación moderna en React para la visualización y resolución de sistema
 ### 4. Sección Teórica
 *   Documentación educativa completa renderizada con **MathRenderer** (KaTeX), cubriendo la derivación del método y su extensión multivariable.
 
-## 📋 Requisitos de Instalación
+##  Requisitos de Instalación
 Dentro de la carpeta `Frontend`, ejecutar:
 ```bash
 npm install

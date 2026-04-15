@@ -1,6 +1,6 @@
 import sympy as sp
 import numpy as np
-from helpers.parser_matematico import obtener_funciones_numericas
+from .parser_matematico import obtener_funciones_numericas
 
 def calcular_jacobiano_analitico(funciones_str: list, variables_str: list):
     """
