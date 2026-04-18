@@ -65,15 +65,6 @@ export const ProcedureStep: React.FC<ProcedureStepProps> = ({ step }) => {
           </div>
         )}
       </div>
-
-      <div className={styles.footer}>
-        {step.error_absoluto !== undefined && (
-          <p><strong>Error Absoluto:</strong> {step.error_absoluto.toExponential(6)}</p>
-        )}
-        {(step as any).error !== undefined && (
-          <p><strong>Error:</strong> {(step as any).error.toExponential(6)}</p>
-        )}
-      </div>
     </div>
   );
 };

@@ -5,6 +5,7 @@ export interface FixedPointRequest {
   punto_inicial: number | number[];
   tolerancia: number;
   iteraciones: number;
+  funciones_originales?: string[];
 }
 
 export interface FixedPointFormulas {

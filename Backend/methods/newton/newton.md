@@ -1,91 +1,32 @@
-# Documentación Técnica: Newton-Raphson con Procedimiento Detallado (Analítico)
+Documentación Técnica: Método de Newton-Raphson Analítico Multivariable
 
-Esta versión avanzada del algoritmo no solo resuelve sistemas de ecuaciones, sino que genera toda la traza de cálculos intermedios y representaciones matemáticas en LaTeX para su visualización en interfaces de usuario (UI).
+Introducción
+El método de Newton-Raphson implementado en este proyecto es un motor de resolución de sistemas de ecuaciones no lineales que destaca por su precisión y profundidad analítica. A diferencia de las versiones numéricas que aproximan derivadas mediante diferencias finitas, este sistema calcula el Jacobiano de forma simbólica, lo que permite obtener una convergencia cuadrática real y una mayor exactitud en la determinación de las raíces.
 
----
+Flujo de Resolución Matemática
+El proceso de cálculo sigue una secuencia rigurosa diseñada para proporcionar la máxima transparencia en los cálculos intermedios.
 
-## 1. Flujo de la Petición y Procedimiento
+1. Generación de la Matriz Jacobiana
+Tras recibir el sistema de ecuaciones como una lista de cadenas de texto, el motor utiliza diferenciación automática simbólica para construir la matriz Jacobiana. Cada entrada J[i,j] representa la derivada parcial de la i-ésima función respecto a la j-ésima variable. Este proceso garantiza que el sistema lineal resuelto en cada iteración sea matemáticamente exacto según las definiciones del usuario.
 
-El sistema ha sido diseñado para ser transparente, permitiendo que el usuario vea exactamente qué sucede en cada paso:
+2. Evaluación y Resolución del Sistema Lineal
+En cada iteración, se evalúan tanto el vector de funciones F como la matriz Jacobiana J en el punto actual x. El sistema procede a resolver la ecuación matricial J * delta_x = -F. Para ello, se utiliza la librería NumPy con optimizaciones para álgebra lineal. El nuevo punto se calcula como x_nuevo = x_actual + delta_x.
 
-1.  **Análisis Simbólico**: Al recibir las funciones, el sistema las traduce a objetos matemáticos de SymPy.
-2.  **Generación de Fórmulas**: Se generan representaciones en **LaTeX** de las funciones y de la matriz Jacobiana analítica.
-3.  **Bucle de Cálculo con Traza**: En cada iteración, antes de actualizar el punto $x$, se capturan los valores numéricos de la matriz $J$ y el vector $F$.
-4.  **Resolución y Paso**: Se calcula el vector de cambio $\Delta x$ y se almacena en el objeto de procedimiento.
+3. Monitoreo de Convergencia y Errores
+El sistema monitorea tres tipos de errores fundamentales:
+- Error absoluto: La norma del vector de cambio delta_x.
+- Error relativo: El cambio normalizado respecto a la magnitud del nuevo punto.
+- Error funcional: La norma del vector de funciones evaluado, indicando qué tan cerca está el sistema de cumplir la igualdad a cero.
 
----
+Capacidades de Diagnóstico y Robustez
+Newton-Raphson es un método extremadamente potente pero sensible a la singularidad de la matriz Jacobiana. Por ello, el sistema incluye:
 
-## 2. Detalle del Algoritmo Principal (`methods/newton/newton.py`)
+- Detección de Matrices Singulares: Si el determinante del Jacobiano es nulo o extremadamente cercano a cero (menor a 1e-18), el método se detiene y reporta el problema exacto, permitiendo al usuario ajustar el punto inicial.
+- Prevención de Desbordamiento: Si el método entra en un ciclo de divergencia y los valores superan el umbral de 10^100, se interrumpe la ejecución para proteger la integridad del servidor y la comunicación JSON.
+- Análisis de Tendencia: Al igual que en el método de punto fijo, si no se alcanza la convergencia en el límite de iteraciones, el sistema analiza si el error está disminuyendo o aumentando, proporcionando consejos contextuales sobre el punto inicial.
 
-El archivo `newton.py` es el "motor" del sistema. A continuación se detalla su lógica interna:
+Visualización y Datos para el Usuario
+La respuesta del backend incluye una traza completa de la resolución. Se proporcionan las funciones en formato LaTeX, el Jacobiano en formato de matriz LaTeX y una lista de pasos detallados que muestran la evaluación numérica de la matriz y las funciones en cada punto de la iteración. Esto convierte a la calculadora no solo en una herramienta de resolución, sino en una plataforma de aprendizaje y validación de pasos matemáticos.
 
-### A. Preparación de Variables
-1.  **Identificación de Variables**: El código detecta cuántas variables hay basándose en la longitud de `punto_inicial`. Genera automáticamente nombres internos como `x_1, x_2, ..., x_n`.
-2.  **Llamada al Jacobiano Analítico**: Invoca al helper `calcular_jacobiano_analitico`. Este paso es crucial porque:
-    *   Convierte los strings en funciones ejecutables (`f_eval`, `j_eval`).
-    *   Genera las fórmulas en LaTeX para la UI.
-
-### B. El Bucle de Iteración
-El algoritmo entra en un bucle que se repite hasta cumplir el máximo de `iteraciones` o alcanzar la `tolerancia`. En cada ciclo sucede lo siguiente:
-
-1.  **Evaluación Numérica**: 
-    *   Se calcula el valor del vector de funciones $F$ evaluando `f_eval` en el punto actual $x$.
-    *   Se calcula la matriz Jacobiana $J$ evaluando `j_eval` en el punto actual $x$.
-2.  **Captura de Procedimiento (Paso Intermedio)**: Antes de realizar cualquier cálculo de actualización, se guardan los valores de $x$, $F$ y $J$ en un objeto temporal. Esto permite que la UI muestre "de dónde salieron los números".
-3.  **Resolución del Sistema Lineal**:
-    *   **Caso Multivariable**: Se resuelve el sistema $J \cdot \Delta x = -F$ utilizando `np.linalg.solve`. Esto busca la dirección y magnitud óptima para acercarse a la raíz.
-    *   **Caso Univariable (1D)**: Si solo hay una variable, se realiza la división simple $\Delta x = -f(x) / f'(x)$.
-4.  **Cálculo del Error**: Se obtiene la **Norma Euclídea** (magnitud) del vector $\Delta x$. Este valor nos dice qué tanto se movió el punto en esta iteración.
-5.  **Actualización de Datos**:
-    *   Se guarda la fila en la `tabla` de resultados.
-    *   Se completa la información del `procedimiento` con el valor del nuevo punto $x_{nuevo} = x + \Delta x$.
-6.  **Criterio de Parada**: Si el `error < tolerancia`, el método se detiene y marca `convergio: true`.
-
----
-
-## 3. Detalle de los Helpers (Entradas y Salidas)
-
-### A. `helpers/parser_matematico.py`
--   **Recibe**: `funciones_str` (List[str]), `variables_str` (List[str]).
--   **Proceso**: Limpieza de texto, soporte para multiplicación implícita (`3x`) y potencias (`^`).
--   **Regresa**: Expresiones simbólicas y funciones de alto rendimiento (NumPy).
-
-### B. `helpers/calcular_jacobiano.py`
--   **Recibe**: `funciones_str`, `variables_str`.
--   **Proceso**: Calcula el Jacobiano simbólico exacto y genera los strings LaTeX.
--   **Regresa**: 
-    -   `f_eval`: Evaluador numérico de funciones.
-    -   `j_eval`: Evaluador numérico del Jacobiano.
-    -   `latex`: Diccionario con `funciones` y `jacobiano` en formato LaTeX.
-
----
-
-## 4. Estructura de Salida (JSON)
-
-La respuesta del backend incluye tres secciones principales para la UI:
-
-### 1. Sección de Fórmulas (`formulas`)
-Strings listos para ser renderizados por MathJax/KaTeX.
-```json
-"formulas": {
-    "funciones": ["x_{1}^{2} + x_{2}^{2} - 4", ...],
-    "jacobiano": "\\left[\\begin{matrix}2 x_{1} & 2 x_{2} ... \\end{matrix}\\right]"
-}
-```
-
-### 2. Tabla Clásica (`tabla`)
-Matriz de datos lista para componentes de tabla (DataTables, Grids).
-```json
-"tabla": {
-    "cabecera": ["n", "x_1", "x_2", "f_1", "f_2", "Error"],
-    "filas": [ [1, 1.0, -1.0, -2.0, 0.71, 0.92], ... ]
-}
-```
-
-### 3. Procedimiento Detallado (`procedimiento`)
-Lista de objetos que describen cada paso matemático realizado:
-*   `x_actual`: Punto de inicio del paso.
-*   `f_evaluada`: Valor de las funciones en ese punto.
-*   `jacobiano_evaluado`: Matriz numérica de derivadas en ese punto.
-*   `delta_x`: Vector de cambio calculado.
-*   `nuevo_x`: Resultado final de la iteración.
+Integración con GeoGebra
+Para la visualización gráfica, las ecuaciones se procesan para eliminar sintaxis técnica de programación y se adaptan a la gramática de GeoGebra, permitiendo la representación de curvas de nivel en 2D y superficies en 3D que se intersectan en la solución encontrada.

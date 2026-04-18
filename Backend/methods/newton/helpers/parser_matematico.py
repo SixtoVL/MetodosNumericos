@@ -4,13 +4,14 @@ from sympy.parsing.sympy_parser import parse_expr, standard_transformations, imp
 
 def pre_procesar_implicit_mult(funcion_str: str):
     """
-    Inserta asteriscos (*) en casos de multiplicación implícita que SymPy no detecta por defecto.
-    Ejemplos:
-    - x_1x_2 -> x_1*x_2
-    - 3x_1 -> 3*x_1
-    - (x_1+1)x_2 -> (x_1+1)*x_2
+    Normaliza el string de la función para ser entendido por SymPy:
+    - Reemplaza ^ por ** (potencia)
+    - Reemplaza [] y {} por () (agrupadores)
+    - Inserta asteriscos (*) en casos de multiplicación implícita.
     """
     f = funcion_str.replace("^", "**")
+    f = f.replace("[", "(").replace("]", ")")
+    f = f.replace("{", "(").replace("}", ")")
     
     # 1. Caso: x_N x_M -> x_N * x_M
     # Detecta una variable x_N seguida de otra x_M

@@ -105,8 +105,41 @@ export const GeoGebraChart: React.FC<GeoGebraChartProps> = ({ tabla, dimension, 
 
           if (metodo === 'punto-fijo') {
             const eqName = `eq${i+1}`;
-            // Graficar x = g1(x,y), y = g2(x,y)...
-            api.evalCommand(`${eqName}: ${varsGeo[i]} = ${f}`);
+            let command = "";
+            
+            if (f.includes('=')) {
+              // Si ya viene con un =, lo usamos tal cual (ej: x = sqrt(y))
+              command = `${eqName}: ${f}`;
+            } else {
+              // Si no tiene =, decidimos:
+              // Si la dimensión es > 1 y estamos en punto fijo, 
+              // el backend ahora envía o el sistema original f(x,y) o g(x,y)
+              // Intentaremos graficarlo como f(x,y) = 0 a menos que sea una sola variable
+              if (dimension === 1) {
+                // En 1D punto fijo, f es g(x), graficamos y = g(x) e y = x
+                api.evalCommand(`g${i+1}(x) = ${f}`);
+                api.setColor(`g${i+1}`, color[0], color[1], color[2]);
+                if (i === 0) {
+                  api.evalCommand("rectaIdentidad: y = x");
+                  api.setColor("rectaIdentidad", 156, 163, 175);
+                  api.setLineStyle("rectaIdentidad", 2);
+                }
+                return; // Salir del loop para esta función
+              } else {
+                // En sistemas, si no tiene =, GeoGebra necesita saber si es x=... o f=0
+                // Como prioridad, si el usuario ingresó "Sistema Original", f debería ser f(x,y) = 0
+                // Pero si son los despejes g(x), debería ser x = g1, y = g2...
+                // Lógica: Si f contiene la variable propia (ej: g1 tiene x), es probable f=0.
+                // Si no, asignamos x, y, z secuencialmente.
+                const currentVar = varsGeo[i];
+                if (f.includes(currentVar)) {
+                  command = `${eqName}: ${f} = 0`;
+                } else {
+                  command = `${eqName}: ${currentVar} = ${f}`;
+                }
+              }
+            }
+            api.evalCommand(command);
             api.setColor(eqName, color[0], color[1], color[2]);
             api.setLineThickness(eqName, 4);
           } else {

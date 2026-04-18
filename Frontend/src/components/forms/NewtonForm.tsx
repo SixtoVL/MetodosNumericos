@@ -10,8 +10,8 @@ interface NewtonFormProps {
 }
 
 export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, initialValues }) => {
-  const [funciones, setFunciones] = useState<string[]>(initialValues?.funciones || ['x_1^2 + x_2^2 - 4', 'exp(x_1) + x_2 - 1']);
-  const [puntoInicial, setPuntoInicial] = useState<number[]>(initialValues?.punto_inicial || [1, -1]);
+  const [funciones, setFunciones] = useState<string[]>(initialValues?.funciones || ['3*x_1**2 + 4*x_2**2 - 16', '2*x_1**2 - 5*x_2**2 - 2']);
+  const [puntoInicial, setPuntoInicial] = useState<number[]>(initialValues?.punto_inicial || [1.8, 1.0]);
   const [tolerancia, setTolerancia] = useState<number>(initialValues?.tolerancia || 0.0001);
   const [iteraciones, setIteraciones] = useState<number>(initialValues?.iteraciones || 20);
 

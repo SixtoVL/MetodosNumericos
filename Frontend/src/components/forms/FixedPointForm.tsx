@@ -10,20 +10,24 @@ interface FixedPointFormProps {
 }
 
 export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPending, initialValues }) => {
+  const [originalFuncs, setOriginalFuncs] = useState<string[]>(
+    initialValues?.funciones_originales || ['x_1**2 + x_2**2 - x_1', 'x_1**2 - x_2**2 - x_2']
+  );
+
   const [gFuncs, setGFuncs] = useState<string[]>(
     Array.isArray(initialValues?.g_func) 
       ? initialValues.g_func 
       : typeof initialValues?.g_func === 'string' 
         ? [initialValues.g_func] 
-        : ['(cos(x_2) + 8) / 10', '(sin(x_1) + 5) / 10']
+        : ['sqrt(x_2 + x_2**2)', 'sqrt(x_1 - x_1**2)']
   );
-  
+
   const [puntoInicial, setPuntoInicial] = useState<number[]>(
     Array.isArray(initialValues?.punto_inicial)
       ? initialValues.punto_inicial
       : typeof initialValues?.punto_inicial === 'number'
         ? [initialValues.punto_inicial]
-        : [0, 0]
+        : [1, 0.5]
   );
   
   const [tolerancia, setTolerancia] = useState<number>(initialValues?.tolerancia || 0.0001);
@@ -31,6 +35,7 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
 
   useEffect(() => {
     if (initialValues) {
+      setOriginalFuncs(initialValues.funciones_originales || Array(gFuncs.length).fill(''));
       setGFuncs(Array.isArray(initialValues.g_func) ? initialValues.g_func : [initialValues.g_func as string]);
       setPuntoInicial(Array.isArray(initialValues.punto_inicial) ? initialValues.punto_inicial : [initialValues.punto_inicial as number]);
       setTolerancia(initialValues.tolerancia);
@@ -38,9 +43,27 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
     }
   }, [initialValues]);
 
-  const handleAddFunction = () => setGFuncs([...gFuncs, '']);
+  // Sincronizar originalFuncs y gFuncs
+  useEffect(() => {
+    if (originalFuncs.length !== gFuncs.length) {
+      if (originalFuncs.length < gFuncs.length) {
+        setOriginalFuncs([...originalFuncs, ...Array(gFuncs.length - originalFuncs.length).fill('')]);
+      } else {
+        setOriginalFuncs(originalFuncs.slice(0, gFuncs.length));
+      }
+    }
+  }, [gFuncs.length]);
+
+  const handleAddFunction = () => {
+    setGFuncs([...gFuncs, '']);
+    setOriginalFuncs([...originalFuncs, '']);
+  };
+
   const handleRemoveFunction = (index: number) => {
-    if (gFuncs.length > 1) setGFuncs(gFuncs.filter((_, i) => i !== index));
+    if (gFuncs.length > 1) {
+      setGFuncs(gFuncs.filter((_, i) => i !== index));
+      setOriginalFuncs(originalFuncs.filter((_, i) => i !== index));
+    }
   };
 
   const handleAddVariable = () => setPuntoInicial([...puntoInicial, 0]);
@@ -49,16 +72,21 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
   };
 
   const isSquareSystem = gFuncs.length === puntoInicial.length;
+  
+  const areFuncsFilled = 
+    gFuncs.every(f => f.trim() !== '') && 
+    originalFuncs.every(f => f.trim() !== '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isSquareSystem) return;
+    if (!isSquareSystem || !areFuncsFilled) return;
     
     onSolve({
       g_func: gFuncs.length === 1 ? gFuncs[0] : gFuncs,
       punto_inicial: puntoInicial.length === 1 ? puntoInicial[0] : puntoInicial,
       tolerancia,
       iteraciones,
+      funciones_originales: originalFuncs
     });
   };
 
@@ -72,16 +100,57 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
       </header>
 
       <form onSubmit={handleSubmit} className={styles.form}>
+        {/* SECCIÓN 1: SISTEMA ORIGINAL */}
         <section className={styles.formSection}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionTitle}>
-              <Sigma size={18} />
-              <h3>Funciones g(x)</h3>
+              <AlertTriangle size={18} color="#2563eb" />
+              <h3>Sistema Original f(x) = 0</h3>
             </div>
             <button type="button" onClick={handleAddFunction} className={styles.addButtonMini}>
               <Plus size={14} /> Añadir
             </button>
           </div>
+          <div className={styles.listContainer}>
+            {originalFuncs.map((func, index) => (
+              <div key={index} className={styles.itemRow}>
+                <span className={styles.itemIndex}>f_{index + 1}</span>
+                <input
+                  type="text"
+                  value={func}
+                  onChange={(e) => {
+                    const newFuncs = [...originalFuncs];
+                    newFuncs[index] = e.target.value;
+                    setOriginalFuncs(newFuncs);
+                  }}
+                  placeholder="Ej: x_1**2 + x_2**2 - 5"
+                  className={styles.mainInput}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFunction(index)}
+                  className={styles.removeButton}
+                  disabled={gFuncs.length <= 1}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECCIÓN 2: DESPEJES G(X) */}
+        <section className={styles.formSection} style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionTitle}>
+              <Sigma size={18} />
+              <h3>Despejes g(x) para el método</h3>
+            </div>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '-0.5rem 0 1rem 1.5rem' }}>
+            Define las funciones para la iteración x_(k+1) = g(x_k).
+          </p>
           <div className={styles.listContainer}>
             {gFuncs.map((func, index) => (
               <div key={index} className={styles.itemRow}>
@@ -94,17 +163,10 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
                     newFuncs[index] = e.target.value;
                     setGFuncs(newFuncs);
                   }}
-                  placeholder="Ej: cos(x_1)"
+                  placeholder="Ej: sqrt(5 - x_2**2)"
                   className={styles.mainInput}
+                  required
                 />
-                <button
-                  type="button"
-                  onClick={() => handleRemoveFunction(index)}
-                  className={styles.removeButton}
-                  disabled={gFuncs.length <= 1}
-                >
-                  <Trash2 size={16} />
-                </button>
               </div>
             ))}
           </div>

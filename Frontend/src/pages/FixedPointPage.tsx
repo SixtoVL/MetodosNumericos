@@ -4,15 +4,23 @@ import { FormulaDisplay } from '../components/results/FormulaDisplay';
 import { IterationTable } from '../components/results/IterationTable';
 import { ProcedureStep } from '../components/visualizers/ProcedureStep';
 import { GeoGebraChart } from '../components/visualizers/GeoGebraChart';
+import { MathSyntaxGuide } from '../components/layout/MathSyntaxGuide';
+import { ExamplesGuide } from '../components/layout/ExamplesGuide';
 import { useFixedPoint } from '../hooks/useFixedPoint';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, AlertCircle, CheckCircle2, Calculator } from 'lucide-react';
 import styles from './NewtonPage.module.css'; // Reutilizamos estilos de Newton para consistencia
 import clsx from 'clsx';
 
 export const FixedPointPage: React.FC = () => {
+  const queryClient = useQueryClient();
   const { mutation, lastResult, formValues } = useFixedPoint();
   const { isPending, isError, error } = mutation;
   
+  const handleSelectExample = (values: any) => {
+    queryClient.setQueryData(['fixed-point-form-values'], values);
+  };
+
   const data = mutation.data || lastResult;
 
   return (
@@ -24,6 +32,9 @@ export const FixedPointPage: React.FC = () => {
 
       <div className={styles.dashboardGrid}>
         <aside>
+          <MathSyntaxGuide method="fixed-point" />
+          <ExamplesGuide method="fixed-point" onSelect={handleSelectExample} />
+          
           <FixedPointForm 
             onSolve={(data) => mutation.mutate(data)} 
             isPending={isPending}
@@ -51,13 +62,19 @@ export const FixedPointPage: React.FC = () => {
         <main className={styles.mainContent}>
           {data ? (
             <>
-              <div className={clsx(styles.statusBanner, data.convergio ? styles.statusSuccess : styles.statusError)}>
+              {/* Banner de Estado Inteligente */}
+              <div className={clsx(
+                styles.statusBanner, 
+                data.convergio ? styles.statusSuccess : (data.error ? styles.statusWarning : styles.statusError)
+              )} style={data.error ? { background: '#fff7ed', border: '1px solid #fed7aa', color: '#9a3412' } : {}}>
                 {data.convergio ? <CheckCircle2 size={24} /> : <AlertCircle size={24} />}
                 <div>
                   <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
-                    {data.convergio ? 'Convergencia Exitosa' : 'El método no convergió'}
+                    {data.convergio ? 'Convergencia Exitosa' : (data.error ? 'Cálculo Detenido' : 'El método no convergió')}
                   </h4>
-                  <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>{data.mensaje}</p>
+                  <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
+                    {data.error || data.mensaje}
+                  </p>
                 </div>
               </div>
 
