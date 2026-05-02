@@ -11,9 +11,10 @@ interface NewtonFormProps {
 
 export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, initialValues }) => {
   const [funciones, setFunciones] = useState<string[]>(initialValues?.funciones || ['3*x_1**2 + 4*x_2**2 - 16', '2*x_1**2 - 5*x_2**2 - 2']);
-  const [puntoInicial, setPuntoInicial] = useState<number[]>(initialValues?.punto_inicial || [1.8, 1.0]);
-  const [tolerancia, setTolerancia] = useState<number>(initialValues?.tolerancia || 0.0001);
-  const [iteraciones, setIteraciones] = useState<number>(initialValues?.iteraciones || 20);
+  // Permitimos string para poder borrar el valor y dejarlo vacío temporalmente
+  const [puntoInicial, setPuntoInicial] = useState<(number | string)[]>(initialValues?.punto_inicial || [1.8, 1.0]);
+  const [tolerancia, setTolerancia] = useState<number | string>(initialValues?.tolerancia || 0.0001);
+  const [iteraciones, setIteraciones] = useState<number | string>(initialValues?.iteraciones || 20);
 
   useEffect(() => {
     if (initialValues) {
@@ -29,7 +30,7 @@ export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, init
     if (funciones.length > 1) setFunciones(funciones.filter((_, i) => i !== index));
   };
 
-  const handleAddVariable = () => setPuntoInicial([...puntoInicial, 0]);
+  const handleAddVariable = () => setPuntoInicial([...puntoInicial, '']);
   const handleRemoveVariable = (index: number) => {
     if (puntoInicial.length > 1) setPuntoInicial(puntoInicial.filter((_, i) => i !== index));
   };
@@ -39,12 +40,23 @@ export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, init
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSquareSystem) return;
+
+    // Validación: No permitir campos vacíos en el envío
+    const hasEmptyField = puntoInicial.some(val => val === '') || 
+                         tolerancia === '' || 
+                         iteraciones === '' || 
+                         funciones.some(f => f.trim() === '');
+
+    if (hasEmptyField) {
+      alert("Por favor, completa todos los campos antes de calcular.");
+      return;
+    }
     
     onSolve({
       funciones,
-      punto_inicial: puntoInicial,
-      tolerancia,
-      iteraciones,
+      punto_inicial: puntoInicial.map(val => typeof val === 'string' ? parseFloat(val) : val),
+      tolerancia: typeof tolerancia === 'string' ? parseFloat(tolerancia) : tolerancia,
+      iteraciones: typeof iteraciones === 'string' ? parseInt(iteraciones) : iteraciones,
     });
   };
 
@@ -83,6 +95,7 @@ export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, init
                   }}
                   placeholder="Ej: x_1^2 - 4"
                   className={styles.mainInput}
+                  required
                 />
                 <button
                   type="button"
@@ -118,10 +131,11 @@ export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, init
                   value={val}
                   onChange={(e) => {
                     const newPoints = [...puntoInicial];
-                    newPoints[index] = parseFloat(e.target.value) || 0;
+                    newPoints[index] = e.target.value; // Guardamos el string directo del input
                     setPuntoInicial(newPoints);
                   }}
                   className={styles.mainInput}
+                  required
                 />
                 <button
                   type="button"
@@ -153,7 +167,8 @@ export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, init
                 type="number"
                 step="any"
                 value={tolerancia}
-                onChange={(e) => setTolerancia(parseFloat(e.target.value) || 0.0001)}
+                onChange={(e) => setTolerancia(e.target.value)}
+                required
               />
             </div>
             <div className={styles.field}>
@@ -161,7 +176,8 @@ export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, init
               <input
                 type="number"
                 value={iteraciones}
-                onChange={(e) => setIteraciones(parseInt(e.target.value) || 1)}
+                onChange={(e) => setIteraciones(e.target.value)}
+                required
               />
             </div>
           </div>

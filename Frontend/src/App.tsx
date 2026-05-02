@@ -8,6 +8,7 @@ import NewtonTheory from './pages/methods/newton/NewtonTheory';
 import { FixedPointPage } from './pages/FixedPointPage';
 import { FixedPointTheory } from './pages/methods/fixed_point/FixedPointTheory';
 import InterpolationTheory from './pages/methods/interpolation/InterpolationTheory';
+import { DividedDifferencesPage } from './pages/methods/interpolation/DividedDifferencesPage';
 import { Menu } from 'lucide-react';
 import './App.css';
 
@@ -53,6 +54,7 @@ function App() {
               <Route path="/metodos/punto-fijo/teoria" element={<FixedPointTheory />} />
               <Route path="/metodos/punto-fijo/calculadora" element={<FixedPointPage />} />
               <Route path="/metodos/interpolacion/teoria" element={<InterpolationTheory />} />
+              <Route path="/metodos/interpolacion/diferencias-divididas" element={<DividedDifferencesPage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>
           </main>

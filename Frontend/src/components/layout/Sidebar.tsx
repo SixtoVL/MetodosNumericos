@@ -105,7 +105,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <NavLink to="/metodos/interpolacion/teoria" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
                 <BookOpen size={18} /> Teoría
               </NavLink>
-              <div className={styles.lockedLink}><Calculator size={18} /> Calculadora</div>
+              <NavLink to="/metodos/interpolacion/diferencias-divididas" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
+                <Calculator size={18} /> Diferencias Divididas
+              </NavLink>
+              <div className={styles.lockedLink}><Calculator size={18} /> Lagrange</div>
             </div>
           )}
         </div>

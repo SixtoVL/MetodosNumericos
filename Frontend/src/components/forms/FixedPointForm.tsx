@@ -22,7 +22,8 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
         : ['sqrt(x_2 + x_2**2)', 'sqrt(x_1 - x_1**2)']
   );
 
-  const [puntoInicial, setPuntoInicial] = useState<number[]>(
+  // Permitimos string para poder borrar el valor y dejarlo vacío temporalmente
+  const [puntoInicial, setPuntoInicial] = useState<(number | string)[]>(
     Array.isArray(initialValues?.punto_inicial)
       ? initialValues.punto_inicial
       : typeof initialValues?.punto_inicial === 'number'
@@ -30,8 +31,8 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
         : [1, 0.5]
   );
   
-  const [tolerancia, setTolerancia] = useState<number>(initialValues?.tolerancia || 0.0001);
-  const [iteraciones, setIteraciones] = useState<number>(initialValues?.iteraciones || 20);
+  const [tolerancia, setTolerancia] = useState<number | string>(initialValues?.tolerancia || 0.0001);
+  const [iteraciones, setIteraciones] = useState<number | string>(initialValues?.iteraciones || 20);
 
   useEffect(() => {
     if (initialValues) {
@@ -66,7 +67,7 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
     }
   };
 
-  const handleAddVariable = () => setPuntoInicial([...puntoInicial, 0]);
+  const handleAddVariable = () => setPuntoInicial([...puntoInicial, '']);
   const handleRemoveVariable = (index: number) => {
     if (puntoInicial.length > 1) setPuntoInicial(puntoInicial.filter((_, i) => i !== index));
   };
@@ -80,12 +81,22 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSquareSystem || !areFuncsFilled) return;
+
+    // Validación: No permitir campos vacíos en el envío
+    const hasEmptyField = puntoInicial.some(val => val === '') || 
+                         tolerancia === '' || 
+                         iteraciones === '';
+
+    if (hasEmptyField) {
+      alert("Por favor, completa todos los campos antes de calcular.");
+      return;
+    }
     
     onSolve({
       g_func: gFuncs.length === 1 ? gFuncs[0] : gFuncs,
-      punto_inicial: puntoInicial.length === 1 ? puntoInicial[0] : puntoInicial,
-      tolerancia,
-      iteraciones,
+      punto_inicial: puntoInicial.length === 1 ? (typeof puntoInicial[0] === 'string' ? parseFloat(puntoInicial[0] as string) : puntoInicial[0] as number) : puntoInicial.map(val => typeof val === 'string' ? parseFloat(val) : val as number),
+      tolerancia: typeof tolerancia === 'string' ? parseFloat(tolerancia) : tolerancia,
+      iteraciones: typeof iteraciones === 'string' ? parseInt(iteraciones) : iteraciones,
       funciones_originales: originalFuncs
     });
   };
@@ -192,10 +203,11 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
                   value={val}
                   onChange={(e) => {
                     const newPoints = [...puntoInicial];
-                    newPoints[index] = parseFloat(e.target.value) || 0;
+                    newPoints[index] = e.target.value; // Guardamos el string directo del input
                     setPuntoInicial(newPoints);
                   }}
                   className={styles.mainInput}
+                  required
                 />
                 <button
                   type="button"
@@ -225,7 +237,8 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
                 type="number"
                 step="any"
                 value={tolerancia}
-                onChange={(e) => setTolerancia(parseFloat(e.target.value) || 0.0001)}
+                onChange={(e) => setTolerancia(e.target.value)}
+                required
               />
             </div>
             <div className={styles.field}>
@@ -233,7 +246,8 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
               <input
                 type="number"
                 value={iteraciones}
-                onChange={(e) => setIteraciones(parseInt(e.target.value) || 1)}
+                onChange={(e) => setIteraciones(e.target.value)}
+                required
               />
             </div>
           </div>
