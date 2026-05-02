@@ -1,143 +1,191 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { MathRenderer } from '../../../components/visualizers/MathRenderer';
-import styles from './NewtonTheory.module.css';
+import { ChevronDown, Target, Zap, AlertTriangle, Info, BookOpen, Activity, Search } from 'lucide-react';
+import styles from '../interpolation/InterpolationTheory.module.css';
 
 const NewtonTheory: React.FC = () => {
+  const [activeModules, setActiveModules] = useState<number[]>([1]);
+  const moduleRefs = {
+    1: useRef<HTMLDivElement>(null),
+    2: useRef<HTMLDivElement>(null),
+    3: useRef<HTMLDivElement>(null),
+  };
+
+  const toggleModule = (id: number) => {
+    const isOpening = !activeModules.includes(id);
+    if (activeModules.includes(id)) {
+      setActiveModules(activeModules.filter(m => m !== id));
+    } else {
+      setActiveModules([...activeModules, id]);
+    }
+
+    if (isOpening) {
+      setTimeout(() => {
+        const ref = moduleRefs[id as keyof typeof moduleRefs];
+        if (ref.current) {
+          ref.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <span className={styles.badge}>Teoría y Fundamentos</span>
         <h1>Método de Newton-Raphson</h1>
         <p>
-          El método de Newton es uno de los algoritmos más potentes y conocidos para encontrar aproximaciones de las raíces de una función.
+          Explora uno de los algoritmos más eficientes y elegantes del análisis numérico para la resolución de ecuaciones no lineales.
         </p>
       </header>
 
-      <section className={styles.section}>
-        <h2>Parte I: Newton en una variable</h2>
+      {/* Módulo 1: Introducción */}
+      <div 
+        className={`${styles.moduleWrapper} ${activeModules.includes(1) ? styles.active : ''}`}
+        ref={moduleRefs[1]}
+      >
+        <button className={styles.moduleHeader} onClick={() => toggleModule(1)}>
+          <div className={styles.moduleTitle}>
+            <div className={styles.moduleNumber}>1</div>
+            <h2>Conceptos Fundamentales</h2>
+          </div>
+          <ChevronDown className={styles.icon} size={20} />
+        </button>
         
-        <h3>Problema que resuelve</h3>
-        <p>Queremos encontrar soluciones de:</p>
-        <MathRenderer math="f(x) = 0" block />
-        <p>Es decir, <strong>raíces de una función</strong>.</p>
-        <div className={styles.example}>
-          Ejemplo: <MathRenderer math="x^2 - 2 = 0 \Rightarrow x = \sqrt{2}" />
-        </div>
+        {activeModules.includes(1) && (
+          <div className={styles.moduleContent}>
+            <section className={styles.section}>
+              <h3><BookOpen size={18} inline /> ¿Qué es el método de Newton?</h3>
+              <p>
+                El método de Newton-Raphson es un procedimiento algorítmico que permite hallar aproximaciones de los ceros o raíces de una función real. 
+                A diferencia de otros métodos como la bisección, Newton utiliza información de la <strong>derivada</strong> de la función, lo que le permite "adivinar" la dirección hacia la raíz con gran precisión.
+              </p>
+              
+              <div className={styles.infoBox}>
+                <strong>Historia:</strong> Fue descrito por Isaac Newton en 1669 y refinado por Joseph Raphson en 1690. Su potencia radica en que, bajo las condiciones adecuadas, la precisión de la aproximación se duplica en cada paso.
+              </div>
 
-        <h3>Idea fundamental (geométrica)</h3>
-        <p>El método de Newton se basa en aproximar la función con su <strong>recta tangente</strong>.</p>
-        <p>En un punto <MathRenderer math="x_n" />, la tangente es:</p>
-        <MathRenderer math="y = f(x_n) + f'(x_n)(x - x_n)" block />
-        <p>Buscamos dónde esa recta cruza el eje <MathRenderer math="x" /> (es decir, cuando <MathRenderer math="y = 0" />).</p>
+              <h3>Motivación Matemática</h3>
+              <p>
+                Muchas ecuaciones en ingeniería (como el cálculo de órbitas o tensiones en materiales) no pueden resolverse con despejes algebraicos simples. 
+                El método de Newton transforma un problema no lineal complejo en una serie de problemas lineales (rectas tangentes) que son mucho más fáciles de resolver.
+              </p>
+            </section>
+          </div>
+        )}
+      </div>
 
-        <h3>Derivación de la fórmula</h3>
-        <p>Igualamos la recta a cero:</p>
-        <MathRenderer math="0 = f(x_n) + f'(x_n)(x_{n+1} - x_n)" block />
-        <p>Despejando obtenemos la fórmula de actualización:</p>
-        <MathRenderer math="x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}" block />
+      {/* Módulo 2: Una Variable */}
+      <div 
+        className={`${styles.moduleWrapper} ${activeModules.includes(2) ? styles.active : ''}`}
+        ref={moduleRefs[2]}
+      >
+        <button className={styles.moduleHeader} onClick={() => toggleModule(2)}>
+          <div className={styles.moduleTitle}>
+            <div className={styles.moduleNumber}>2</div>
+            <h2>Newton en una variable</h2>
+          </div>
+          <ChevronDown className={styles.icon} size={20} />
+        </button>
+        
+        {activeModules.includes(2) && (
+          <div className={styles.moduleContent}>
+            <section className={styles.section}>
+              <h3><Target size={18} inline /> Problema que resuelve</h3>
+              <p>Buscamos el valor de <MathRenderer math="x" /> que satisfaga:</p>
+              <MathRenderer math="f(x) = 0" block />
+              <div className={styles.example}>
+                <strong>Ejemplo práctico:</strong> Si queremos hallar <MathRenderer math="\sqrt{2}" />, resolvemos <MathRenderer math="x^2 - 2 = 0" />.
+              </div>
+            </section>
 
-        <h3>Algoritmo</h3>
-        <ol>
-          <li>Elegir un valor inicial <MathRenderer math="x_0" />.</li>
-          <li>Repetir:
-            <ul>
-              <li>Calcular <MathRenderer math="f(x_n)" />.</li>
-              <li>Calcular <MathRenderer math="f'(x_n)" />.</li>
-              <li>Actualizar: <MathRenderer math="x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}" />.</li>
-            </ul>
-          </li>
-          <li>Detener cuando:
-            <ul>
-              <li><MathRenderer math="|x_{n+1} - x_n|" /> sea pequeño, o</li>
-              <li><MathRenderer math="|f(x_n)|" /> sea pequeño.</li>
-            </ul>
-          </li>
-        </ol>
+            <section className={styles.section}>
+              <h3>Interpretación Geométrica</h3>
+              <p>
+                Imagina que estás en un punto <MathRenderer math="x_n" /> de la curva. Trazamos una <strong>recta tangente</strong> a la función en ese punto. 
+                El lugar donde esa recta cruza el eje <MathRenderer math="x" /> será nuestra siguiente y mejor aproximación, <MathRenderer math="x_{n+1}" />.
+              </p>
+              <p>La ecuación de la tangente es:</p>
+              <MathRenderer math="y - f(x_n) = f'(x_n)(x - x_n)" block />
+              <p>Haciendo <MathRenderer math="y = 0" /> y despejando <MathRenderer math="x" />, obtenemos la famosa fórmula:</p>
+              <MathRenderer math="x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}" block />
+            </section>
 
-        <h3>Convergencia</h3>
-        <p>El método de Newton tiene <strong>convergencia cuadrática</strong>:</p>
-        <MathRenderer math="\text{error}_{n+1} \approx C \cdot \text{error}_n^2" block />
-        <p>Esto significa que el número de cifras correctas se duplica en cada iteración.</p>
+            <section className={styles.section}>
+              <h3>Algoritmo Paso a Paso</h3>
+              <ol>
+                <li><strong>Inicialización:</strong> Elegir una semilla o valor inicial <MathRenderer math="x_0" /> (preferiblemente cerca de la raíz).</li>
+                <li><strong>Evaluación:</strong> Calcular el valor de la función y su derivada en el punto actual.</li>
+                <li><strong>Actualización:</strong> Aplicar la fórmula para obtener el siguiente punto.</li>
+                <li><strong>Verificación:</strong> ¿Es el cambio menor que nuestra tolerancia? Si no, repetir desde el paso 2.</li>
+              </ol>
+            </section>
 
-        <h3>Condiciones para que funcione bien</h3>
-        <ul>
-          <li>La función debe ser derivable.</li>
-          <li>Su derivada no debe ser cero cerca de la raíz.</li>
-          <li>El punto inicial debe estar cerca de la raíz.</li>
-        </ul>
+            <section className={styles.section}>
+              <h3><Activity size={18} inline /> Convergencia Cuadrática</h3>
+              <p>
+                Esta es la característica "estrella" de Newton. Si el error en un paso es <MathRenderer math="10^{-2}" />, en el siguiente será aproximadamente <MathRenderer math="10^{-4}" />, luego <MathRenderer math="10^{-8}" />, y así sucesivamente.
+              </p>
+            </section>
 
-        <h3>Cuándo falla</h3>
-        <h4>Derivada cero</h4>
-        <p>Si <MathRenderer math="f'(x_n) = 0" />, se produce una división por cero.</p>
-        <h4>Punto inicial inadecuado</h4>
-        <p>Puede diverger, irse al infinito u oscilar.</p>
-        <h4>Funciones no suaves</h4>
-        <p>Puntas o discontinuidades dificultan la convergencia.</p>
-        <h4>Raíces múltiples</h4>
-        <p>Si la raíz tiene multiplicidad mayor que 1, la convergencia se vuelve <strong>lineal</strong>.</p>
+            <div className={styles.warningBox}>
+              <h3><AlertTriangle size={18} inline /> Limitaciones Técnicas</h3>
+              <ul>
+                <li><strong>Puntos de Inflexión:</strong> Si <MathRenderer math="f'(x_n)" /> es muy cercano a cero, la tangente se vuelve casi horizontal y el método "dispara" la siguiente aproximación muy lejos del objetivo.</li>
+                <li><strong>Ciclos Infinitos:</strong> En algunas funciones, el método puede oscilar entre dos valores sin converger nunca.</li>
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
 
-        <h3>Interpretación del error</h3>
-        <p>Sea <MathRenderer math="r" /> la raíz real. Definimos el error como <MathRenderer math="e_n = x_n - r" />. Entonces:</p>
-        <MathRenderer math="e_{n+1} \approx \frac{f''(r)}{2f'(r)} e_n^2" block />
+      {/* Módulo 3: Multivariable */}
+      <div 
+        className={`${styles.moduleWrapper} ${activeModules.includes(3) ? styles.active : ''}`}
+        ref={moduleRefs[3]}
+      >
+        <button className={styles.moduleHeader} onClick={() => toggleModule(3)}>
+          <div className={styles.moduleTitle}>
+            <div className={styles.moduleNumber}>3</div>
+            <h2>Sistemas de Varias Variables</h2>
+          </div>
+          <ChevronDown className={styles.icon} size={20} />
+        </button>
 
-        <div className={styles.infoBox}>
-          <strong>Variante para raíces múltiples:</strong> Si la raíz tiene multiplicidad <MathRenderer math="m" />, se puede usar:
-          <MathRenderer math="x_{n+1} = x_n - m \frac{f(x_n)}{f'(x_n)}" block />
-          Esto mejora la convergencia.
-        </div>
+        {activeModules.includes(3) && (
+          <div className={styles.moduleContent}>
+            <section className={styles.section}>
+              <h3><Search size={18} inline /> El desafío de la multidimensión</h3>
+              <p>
+                Cuando trabajamos con sistemas de ecuaciones, ya no buscamos un punto en una línea, sino un vector en un espacio (2D, 3D o más).
+              </p>
+              <MathRenderer math="F(\mathbf{x}) = \mathbf{0} \quad \Rightarrow \quad \begin{cases} f_1(x_1, x_2, \dots) = 0 \\ f_2(x_1, x_2, \dots) = 0 \end{cases}" block />
+            </section>
 
-        <p><strong>Intuición:</strong> Newton consiste en reemplazar una función complicada por su aproximación lineal (tangente), resolver esa aproximación y repetir el proceso.</p>
-      </section>
+            <section className={styles.section}>
+              <h3>El Rol del Jacobiano</h3>
+              <p>
+                En una dimensión usamos la derivada simple. En varias dimensiones, necesitamos todas las derivadas parciales posibles organizadas en una matriz llamada <strong>Jacobiano</strong> (<MathRenderer math="J" />).
+              </p>
+              <div className={styles.infoBox}>
+                El Jacobiano representa la "pendiente" del sistema en todas las direcciones simultáneamente. Si el determinante del Jacobiano es cero, el sistema es singular y el método no puede avanzar.
+              </div>
+            </section>
 
-      <hr />
+            <section className={styles.section}>
+              <h3>Ecuación del Sistema Lineal</h3>
+              <p>La actualización se convierte en un problema de álgebra lineal:</p>
+              <MathRenderer math="J(\mathbf{x}_n) \cdot \Delta \mathbf{x} = -F(\mathbf{x}_n)" block />
+              <p>Donde <MathRenderer math="\Delta \mathbf{x}" /> es el paso que debemos dar para acercarnos a la solución:</p>
+              <MathRenderer math="\mathbf{x}_{n+1} = \mathbf{x}_n + \Delta \mathbf{x}" block />
+            </section>
 
-      <section className={styles.section}>
-        <h2>Parte II: Transición a varias variables</h2>
-        <p>
-          El método de Newton en varias variables es una extensión natural. Mientras que en una variable buscamos <MathRenderer math="f(x) = 0" />, 
-          en varias variables resolvemos un sistema:
-        </p>
-        <MathRenderer math="F(\mathbf{x}) = \mathbf{0}" block />
-        <p>donde <MathRenderer math="\mathbf{x} = (x_1, \dots, x_n)" /> y <MathRenderer math="F = (f_1, \dots, f_n)" />.</p>
-        <ul>
-          <li>En una variable se usa una <strong>recta</strong> (tangente).</li>
-          <li>En varias variables se usa un <strong>plano o hiperplano</strong>.</li>
-        </ul>
-
-        <h3>Aproximación lineal multivariable</h3>
-        <p>La expansión de Taylor de primer orden es:</p>
-        <MathRenderer math="F(\mathbf{x}) \approx F(\mathbf{x}_n) + J(\mathbf{x}_n)(\mathbf{x} - \mathbf{x}_n)" block />
-
-        <h3>El Jacobiano</h3>
-        <p>La matriz de derivadas parciales que juega el papel de la derivada es el <strong>Jacobiano</strong>:</p>
-        <MathRenderer math="J(x,y) = \begin{bmatrix} \frac{\partial f_1}{\partial x} & \frac{\partial f_1}{\partial y} \\ \frac{\partial f_2}{\partial x} & \frac{\partial f_2}{\partial y} \end{bmatrix}" block />
-
-        <h3>Fórmula del método</h3>
-        <p>Queremos <MathRenderer math="F(\mathbf{x}_{n+1}) = 0" />, lo que nos lleva a:</p>
-        <MathRenderer math="\mathbf{x}_{n+1} = \mathbf{x}_n - J(\mathbf{x}_n)^{-1} F(\mathbf{x}_n)" block />
-
-        <div className={styles.warningBox}>
-          <strong>Forma práctica:</strong> En lugar de invertir el Jacobiano, resolvemos el sistema lineal:
-          <MathRenderer math="J(\mathbf{x}_n)\Delta \mathbf{x} = -F(\mathbf{x}_n)" block />
-          Y actualizamos: <MathRenderer math="\mathbf{x}_{n+1} = \mathbf{x}_n + \Delta \mathbf{x}" />.
-        </div>
-
-        <h3>Dificultades y Convergencia</h3>
-        <ul>
-          <li><strong>Jacobiano no invertible:</strong> Si <MathRenderer math="\det(J) = 0" />, el método no puede continuar.</li>
-          <li><strong>Costo computacional:</strong> Requiere calcular derivadas parciales y resolver sistemas lineales.</li>
-          <li><strong>Sensibilidad:</strong> Es más sensible al punto inicial que en una dimensión.</li>
-        </ul>
-        <p>La convergencia sigue siendo <strong>cuadrática</strong> bajo las condiciones adecuadas.</p>
-
-        <div className={styles.infoBox}>
-          <strong>Resumen:</strong>
-          <ul>
-            <li>Newton 1D: tangente <MathRenderer math="\rightarrow" /> número.</li>
-            <li>Newton multivariable: plano <MathRenderer math="\rightarrow" /> vector.</li>
-          </ul>
-        </div>
-      </section>
+            <div className={styles.example}>
+              <strong>Resumen de complejidad:</strong> Mientras que Newton 1D requiere 1 división, Newton Multivariable requiere resolver un sistema de ecuaciones lineales <MathRenderer math="n \times n" /> en cada iteración.
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

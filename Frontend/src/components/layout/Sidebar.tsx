@@ -11,6 +11,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [isNewtonOpen, setIsNewtonOpen] = useState(true);
   const [isFixedPointOpen, setIsFixedPointOpen] = useState(false);
+  const [isInterpolationOpen, setIsInterpolationOpen] = useState(false);
 
   const toggleNewton = () => {
     setIsNewtonOpen(!isNewtonOpen);
@@ -18,6 +19,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const toggleFixedPoint = () => {
     setIsFixedPointOpen(!isFixedPointOpen);
+  };
+
+  const toggleInterpolation = () => {
+    setIsInterpolationOpen(!isInterpolationOpen);
   };
 
   return (
@@ -82,6 +87,25 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               <NavLink to="/metodos/punto-fijo/calculadora" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
                 <Calculator size={18} /> Calculadora
               </NavLink>
+            </div>
+          )}
+
+          {/* Interpolación */}
+          <div 
+            className={styles.methodTitle} 
+            onClick={toggleInterpolation}
+            style={{ cursor: 'pointer', userSelect: 'none', marginTop: '0.5rem' }}
+          >
+            {isInterpolationOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            Interpolación
+          </div>
+          
+          {isInterpolationOpen && (
+            <div className={styles.subMenu}>
+              <NavLink to="/metodos/interpolacion/teoria" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
+                <BookOpen size={18} /> Teoría
+              </NavLink>
+              <div className={styles.lockedLink}><Calculator size={18} /> Calculadora</div>
             </div>
           )}
         </div>
