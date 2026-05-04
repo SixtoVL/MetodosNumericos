@@ -56,34 +56,7 @@ export const DividedDifferencesPage: React.FC = () => {
         <main className={styles.mainContent}>
           {data ? (
             <>
-              {/* Resultado Principal */}
-              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
-                  Polinomio Interpolante (Forma de Newton)
-                </h3>
-                <SimpleFormulaDisplay formula={data.polinomio_latex} />
-                
-                {data.valor_evaluado && (
-                  <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#f0fdf4', borderRadius: '0.5rem', border: '1px solid #bbf7d0' }}>
-                    <div style={{ fontWeight: 600, color: '#166534', marginBottom: '0.25rem' }}>Punto Evaluado</div>
-                    <MathRenderer math={`P(${data.valor_evaluado.x}) = ${data.valor_evaluado.y.toFixed(6)}`} />
-                  </div>
-                )}
-              </div>
-
-              {/* Gráfica */}
-              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
-                  Representación Gráfica
-                </h3>
-                <InterpolationChart 
-                  puntosX={data.puntos_x}
-                  puntosY={data.puntos_y}
-                  polinomioLatex={data.polinomio_latex}
-                />
-              </div>
-
-              {/* Tabla de Diferencias */}
+              {/* 1. Tabla de Diferencias */}
               <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
                   Tabla de Diferencias Divididas
@@ -95,7 +68,7 @@ export const DividedDifferencesPage: React.FC = () => {
                         <th style={{ padding: '0.75rem' }}>x_i</th>
                         <th style={{ padding: '0.75rem' }}>f[x_i]</th>
                         {data.tabla[0].slice(2).map((_, i) => (
-                          <th key={i} style={{ padding: '0.75rem' }}>Orden {i + 1}</th>
+                          <th key={i}>Orden {i + 1}</th>
                         ))}
                       </tr>
                     </thead>
@@ -103,6 +76,7 @@ export const DividedDifferencesPage: React.FC = () => {
                       {data.tabla.map((fila, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                           {fila.map((valor, j) => {
+                            // Los coeficientes están en la primera fila (i=0) para j >= 1
                             const isCoefficient = (i === 0 && j >= 1);
                             return (
                               <td 
@@ -124,8 +98,8 @@ export const DividedDifferencesPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Procedimiento */}
-              <section>
+              {/* 2. Procedimiento */}
+              <section style={{ marginBottom: '2rem' }}>
                 <h3 style={{ marginBottom: '1.5rem', color: '#1e293b', fontSize: '1.5rem', fontWeight: 700 }}>
                   Procedimiento Matemático
                 </h3>
@@ -141,6 +115,33 @@ export const DividedDifferencesPage: React.FC = () => {
                   ))}
                 </div>
               </section>
+
+              {/* 3. Polinomio Resultante */}
+              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
+                  Polinomio Interpolante (Forma de Newton)
+                </h3>
+                <SimpleFormulaDisplay formula={data.polinomio_latex} />
+                
+                {data.valor_evaluado && (
+                  <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#f0fdf4', borderRadius: '0.5rem', border: '1px solid #bbf7d0' }}>
+                    <div style={{ fontWeight: 600, color: '#166534', marginBottom: '0.25rem' }}>Punto Evaluado</div>
+                    <MathRenderer math={`P(${data.valor_evaluado.x}) = ${data.valor_evaluado.y.toFixed(6)}`} />
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Gráfica */}
+              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
+                  Representación Gráfica
+                </h3>
+                <InterpolationChart 
+                  puntosX={data.puntos_x}
+                  puntosY={data.puntos_y}
+                  polinomioLatex={data.polinomio_latex}
+                />
+              </div>
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '5rem 2rem', color: '#94a3b8', background: 'white', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
