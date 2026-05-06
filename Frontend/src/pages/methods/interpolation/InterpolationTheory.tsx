@@ -422,7 +422,7 @@ const InterpolationTheory: React.FC = () => {
         )}
       </div>
 
-      {/* Módulo 5: Interpolación Lineal */}
+      {/* Módulo 5: Interpolación Lineal (Caso Particular) */}
       <div 
         className={`${styles.moduleWrapper} ${activeModules.includes(5) ? styles.active : ''}`}
         ref={moduleRefs[5]}
@@ -438,34 +438,96 @@ const InterpolationTheory: React.FC = () => {
         {activeModules.includes(5) && (
           <div className={styles.moduleContent}>
             <section className={styles.section}>
-              <h3><Activity size={18} /> Definición</h3>
-              <p>Es el caso más simple de interpolación, donde se utilizan dos puntos y se construye un polinomio de grado 1 (una recta).</p>
+              <p>
+                Aunque ya hemos visto métodos potentes para <MathRenderer math="n" /> puntos, la interpolación lineal es el cimiento de la computación numérica. Es simplemente el <strong>caso particular</strong> de los métodos anteriores cuando solo tenemos 2 puntos (<MathRenderer math="n=1" />).
+              </p>
             </section>
 
             <section className={styles.section}>
-              <h3>Formulación Matemática</h3>
-              <MathRenderer math="P_1(x)=y_0 + \frac{y_1 - y_0}{x_1 - x_0}(x - x_0)" block />
-              <p>Esta es la ecuación de la recta que pasa por dos puntos, donde el término fraccionario representa la pendiente.</p>
-              
-              <h4>Forma alternativa</h4>
-              <MathRenderer math="P(x) = y_0 \cdot \frac{x - x_1}{x_0 - x_1} + y_1 \cdot \frac{x - x_0}{x_1 - x_0}" block />
+              <h3>1. Como caso de Diferencias Divididas (Newton)</h3>
+              <p>Si aplicamos la <strong>Forma de Newton</strong> del Módulo 4 para dos puntos <MathRenderer math="(x_0, y_0)" /> y <MathRenderer math="(x_1, y_1)" />:</p>
+              <MathRenderer math="P_1(x) = f[x_0] + f[x_0, x_1](x - x_0)" block />
+              <p>Donde la diferencia dividida de primer orden <MathRenderer math="f[x_0, x_1]" /> es exactamente la <strong>pendiente</strong> <MathRenderer math="m" />:</p>
+              <MathRenderer math="f[x_0, x_1] = \frac{y_1 - y_0}{x_1 - x_0}" block />
+              <div className={styles.infoBox}>
+                <strong>Conclusión:</strong> La fórmula clásica <MathRenderer math="y = y_0 + m(x - x_0)" /> no es más que un polinomio de Newton de grado 1.
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h3>2. Como caso de Lagrange</h3>
+              <p>Si usamos la fórmula del Módulo 2 para <MathRenderer math="n=1" />, los polinomios base de Lagrange se convierten en:</p>
+              <div style={{ display: 'flex', justifyContent: 'space-around', margin: '1rem 0' }}>
+                <MathRenderer math="L_0(x) = \frac{x - x_1}{x_0 - x_1}" />
+                <MathRenderer math="L_1(x) = \frac{x - x_0}{x_1 - x_0}" />
+              </div>
+              <p>El polinomio resultante es:</p>
+              <MathRenderer math="P_1(x) = y_0 \left( \frac{x - x_1}{x_0 - x_1} \right) + y_1 \left( \frac{x - x_0}{x_1 - x_0} \right)" block />
+              <p>Esta forma es equivalente a la anterior, pero visualiza la influencia ponderada de cada punto.</p>
             </section>
 
             <section className={styles.section}>
               <h3>Interpretación Geométrica</h3>
-              <p>Se asume que el comportamiento de la función entre dos nodos es lineal. Es una aproximación local muy útil por su sencillez pero limitada por su falta de captura de curvatura.</p>
+              <p>Geométricamente, estamos trazando una <strong>línea recta</strong> que une los dos puntos. Es la aproximación más simple y supone que la función cambia a un ritmo constante entre los nodos.</p>
             </section>
 
             <section className={styles.section}>
-              <h3><Info size={18} /> Ejemplo Práctico</h3>
-              <p>Datos: <MathRenderer math="(1,2), (3,6)" />. Interpolación en <MathRenderer math="x=2" />:</p>
+              <h3>Análisis del Error</h3>
+              <p>El error de truncamiento en la interpolación lineal nos dice qué tan lejos estamos de la función real <MathRenderer math="f(x)" />:</p>
+              <MathRenderer math="R_1(x) = \frac{f''(\xi)}{2}(x - x_0)(x - x_1)" block />
+              <div className={styles.infoBox}>
+                <strong>¿Qué significa esto?</strong>
+                <ul>
+                  <li>Si la función real es una recta, <MathRenderer math="f''(x) = 0" />, por lo que el error es cero.</li>
+                  <li>A mayor curvatura (<MathRenderer math="f''" />), mayor será el error de la recta.</li>
+                  <li>El error es máximo cerca del centro del intervalo y cero en los nodos.</li>
+                </ul>
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h3>Interpolación Lineal Segmentaria (Piecewise)</h3>
+              <p>En la práctica, si tenemos 10 puntos, no solemos usar un polinomio de grado 9 (que puede oscilar salvajemente). En su lugar, aplicamos <strong>interpolación lineal por tramos</strong>:</p>
+              <ul>
+                <li>Se conectan los puntos adyacentes con "micro-rectas".</li>
+                <li>Es la base de los <strong>Splines</strong>.</li>
+                <li>Garantiza que la aproximación sea "estable", aunque no sea suave en los puntos de unión (vértices).</li>
+              </ul>
+            </section>
+
+            <section className={styles.section}>
+              <h3><Target size={18} /> ¿Qué problemas reales resuelve?</h3>
+              <p>Aunque parece un método simple, la interpolación lineal es la "navaja suiza" en ingeniería por su velocidad y facilidad de implementación:</p>
+              <ul>
+                <li><strong>Lectura de Tablas Técnicas:</strong> Es el estándar para consultar tablas termodinámicas (vapor, presión) o financieras. Si tu dato está entre dos filas de la tabla, usas una recta para estimar el valor exacto.</li>
+                <li><strong>Calibración de Sensores:</strong> Los sensores físicos (voltaje, presión, temperatura) a menudo se calibran tomando dos puntos de referencia y trazando una recta para convertir la señal eléctrica en una unidad legible.</li>
+                <li><strong>Optimización de Software (LUTs):</strong> Para ahorrar batería o CPU, el software de alto rendimiento evita calcular funciones complejas ($sin, log$) repetidamente; en su lugar, consulta una "Tabla de Búsqueda" (Look-up Table) e interpola linealmente entre los valores más cercanos.</li>
+                <li><strong>Navegación y GPS:</strong> Si un receptor GPS recibe tu posición cada segundo, el software usa interpolación lineal para "dibujar" el movimiento fluido del vehículo en el mapa entre cada actualización.</li>
+              </ul>
+            </section>
+
+            <section className={styles.section}>
+              <h3><Zap size={18} /> Aplicación en Computación: El "Lerp"</h3>
+              <p>En videojuegos y gráficos por computadora, esta fórmula se conoce como <strong>Lerp</strong> (Linear Interpolation). Se usa para animaciones suaves:</p>
+              <MathRenderer math="\text{lerp}(a, b, t) = a + t(b - a)" block />
+              <p>Donde <MathRenderer math="t" /> es un porcentaje entre 0 y 1. Si notas la estructura, es exactamente la misma que la de Newton/Diferencias Divididas que explicamos antes.</p>
+            </section>
+
+            <section className={styles.section}>
+              <h3><Info size={18} /> Ejemplo Unificado</h3>
+              <p>Dados <MathRenderer math="(2, 4)" /> y <MathRenderer math="(5, 10)" />, estimar en <MathRenderer math="x=3" />:</p>
               <div className={styles.example}>
-                <MathRenderer math="P(2) = 2 + \frac{6-2}{3-1}(2-1) = 2 + \frac{4}{2}(1) = 4" block />
+                <ol>
+                  <li><strong>Pendiente (Diff. Dividida):</strong> <MathRenderer math="f[2, 5] = \frac{10-4}{5-2} = \frac{6}{3} = 2" />.</li>
+                  <li><strong>Newton:</strong> <MathRenderer math="P(3) = 4 + 2(3 - 2) = 4 + 2 = 6" />.</li>
+                  <li><strong>Lagrange:</strong> <MathRenderer math="P(3) = 4(\frac{3-5}{2-5}) + 10(\frac{3-2}{5-2}) = 4(\frac{-2}{-3}) + 10(\frac{1}{3}) = \frac{8}{3} + \frac{10}{3} = \frac{18}{3} = 6" />.</li>
+                </ol>
+                <strong>¡Ambos caminos llevan al mismo resultado!</strong>
               </div>
             </section>
 
             <div className={styles.warningBox}>
-              <AlertCircle size={16} /> <strong>Error:</strong> El error de la interpolación lineal depende directamente de la "curvatura" (segunda derivada) de la función real.
+              <AlertCircle size={16} /> <strong>Limitación:</strong> Al usar solo 2 puntos, ignoramos cualquier curvatura (aceleración) de la función original, lo que puede generar errores grandes si los puntos están muy separados.
             </div>
           </div>
         )}
