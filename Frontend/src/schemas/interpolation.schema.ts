@@ -6,6 +6,7 @@ export interface Point {
 export interface DividedDifferencesRequest {
   puntos: Point[];
   x_a_evaluar?: number | null;
+  metodo?: 'divididas' | 'finitas';
 }
 
 export interface DividedDifferencesResponse {

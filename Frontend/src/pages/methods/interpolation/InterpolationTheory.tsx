@@ -347,7 +347,7 @@ const InterpolationTheory: React.FC = () => {
         )}
       </div>
 
-      {/* Módulo 4: Newton */}
+      {/* Módulo 4: Interpolación de Newton */}
       <div 
         className={`${styles.moduleWrapper} ${activeModules.includes(4) ? styles.active : ''}`}
         ref={moduleRefs[4]}
@@ -387,35 +387,110 @@ const InterpolationTheory: React.FC = () => {
             </section>
 
             <section className={styles.section}>
-              <h3><Table size={18} /> Casos Especiales: Nodos Equiespaciados</h3>
-              <p>Si la distancia entre cada <MathRenderer math="x_i" /> es constante (<MathRenderer math="h" />), podemos simplificar el proceso usando <strong>Diferencias Finitas</strong>.</p>
+              <h3><GitFork size={18} /> El Salto a los Casos Particulares</h3>
+              <p>
+                Aunque la forma anterior funciona para cualquier conjunto de puntos, en ingeniería es común trabajar con datos tomados a intervalos constantes (ej. cada segundo, cada metro). Aquí es donde el método de Newton se optimiza mediante las <strong>Diferencias Finitas</strong>.
+              </p>
+            </section>
+
+            <section className={styles.section}>
+              <h3>Diferencias Divididas vs. Diferencias Finitas</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div>
+                  <h4>1. Diferencias Divididas (General)</h4>
+                  <p>Se definen para puntos arbitrarios. Su base es la <strong>división</strong> por el espaciamiento de los nodos:</p>
+                  <MathRenderer math="f[x_0, x_1] = \frac{f(x_1) - f(x_0)}{x_1 - x_0}" block />
+                  <ul style={{ fontSize: '0.9rem' }}>
+                    <li>Ajustan automáticamente el espaciamiento.</li>
+                    <li>Base del Newton General.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4>2. Diferencias Finitas (Especial)</h4>
+                  <p>Se usan cuando el paso <MathRenderer math="h" /> es constante (<MathRenderer math="x_{i+1} - x_i = h" />). <strong>No dividen</strong> explícitamente:</p>
+                  <MathRenderer math="\Delta y_i = y_{i+1} - y_i" block />
+                  <ul style={{ fontSize: '0.9rem' }}>
+                    <li>Mucho más simples de calcular.</li>
+                    <li>Base de Newton Adelante/Atrás.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h3>La Relación Matemática Clave</h3>
+              <p>Es un error común pensar que son nombres distintos para lo mismo. Las diferencias finitas son una <strong>versión simplificada</strong> de las divididas. Si los puntos son equiespaciados, la relación es:</p>
+              <MathRenderer math="f[x_0, x_1, \dots, x_k] = \frac{\Delta^k y_0}{k! h^k}" block />
+              <div className={styles.infoBox}>
+                <strong>¿Por qué aparecen factoriales y potencias?</strong>
+                Al no dividir en cada paso (como hacen las divididas), el "peso" del espaciamiento <MathRenderer math="h" /> y el crecimiento combinatorio de los términos se compensan al final con el <MathRenderer math="k!" /> y <MathRenderer math="h^k" /> en la fórmula del polinomio.
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h3><Table size={18} /> Comparación de Métodos</h3>
+              <div style={{ overflowX: 'auto' }}>
+                <table className={styles.comparisonTable} style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
+                      <th style={{ padding: '0.5rem' }}>Característica</th>
+                      <th style={{ padding: '0.5rem' }}>Diferencias Divididas</th>
+                      <th style={{ padding: '0.5rem' }}>Diferencias Finitas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: '1px solid #edf2f7' }}>
+                      <td style={{ padding: '0.5rem' }}><strong>Tipo de Nodos</strong></td>
+                      <td style={{ padding: '0.5rem' }}>Cualquiera (Arbitrarios)</td>
+                      <td style={{ padding: '0.5rem' }}>Equiespaciados (<MathRenderer math="h" /> cte)</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #edf2f7' }}>
+                      <td style={{ padding: '0.5rem' }}><strong>Complejidad</strong></td>
+                      <td style={{ padding: '0.5rem' }}>Alta (Requiere divisiones)</td>
+                      <td style={{ padding: '0.5rem' }}>Baja (Solo restas)</td>
+                    </tr>
+                    <tr style={{ borderBottom: '1px solid #edf2f7' }}>
+                      <td style={{ padding: '0.5rem' }}><strong>Flexibilidad</strong></td>
+                      <td style={{ padding: '0.5rem' }}>Total</td>
+                      <td style={{ padding: '0.5rem' }}>Limitada al caso uniforme</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.5rem' }}><strong>Fórmula Newton</strong></td>
+                      <td style={{ padding: '0.5rem' }}>Forma General</td>
+                      <td style={{ padding: '0.5rem' }}>Adelante / Atrás / Central</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section className={styles.section}>
+              <h3>Casos de Newton para Diferencias Finitas</h3>
+              <p>Dependiendo de dónde se encuentre el valor que queremos interpolar (<MathRenderer math="x" />) respecto a nuestra tabla de datos, elegimos una variante:</p>
               
               <div className={styles.infoBox}>
-                <h4>Newton hacia Adelante</h4>
-                <p>Ideal para interpolar cerca del inicio de los datos (<MathRenderer math="x_0" />).</p>
-                <MathRenderer math="P(x) = y_0 + s\Delta y_0 + \frac{s(s-1)}{2!}\Delta^2 y_0 + \cdots" block />
+                <h4>1. Newton hacia Adelante (Forward)</h4>
+                <p>Ideal para valores cerca del inicio de la tabla. Usa diferencias <MathRenderer math="\Delta" /> de la parte superior.</p>
+                <MathRenderer math="P(x) = y_0 + s\Delta y_0 + \frac{s(s-1)}{2!}\Delta^2 y_0 + \dots" block />
                 <p style={{ fontSize: '0.85rem' }}>* Donde <MathRenderer math="s = (x - x_0)/h" /></p>
               </div>
 
               <div className={styles.infoBox} style={{ borderLeftColor: '#10b981' }}>
-                <h4>Newton hacia Atrás</h4>
-                <p>Ideal para interpolar cerca del final de los datos (<MathRenderer math="x_n" />).</p>
-                <MathRenderer math="P(x) = y_n + s\nabla y_n + \frac{s(s+1)}{2!}\nabla^2 y_n + \cdots" block />
+                <h4>2. Newton hacia Atrás (Backward)</h4>
+                <p>Ideal para valores cerca del final de la tabla (extrapolación final). Usa diferencias <MathRenderer math="\nabla" /> de la parte inferior.</p>
+                <MathRenderer math="P(x) = y_n + s\nabla y_n + \frac{s(s+1)}{2!}\nabla^2 y_n + \dots" block />
                 <p style={{ fontSize: '0.85rem' }}>* Donde <MathRenderer math="s = (x - x_n)/h" /></p>
               </div>
             </section>
 
             <section className={styles.section}>
-              <h3><Info size={18} /> Ejemplo de Construcción</h3>
-              <p>Datos: <MathRenderer math="(1,1), (2,4), (3,9), (4,16)" /></p>
-              <ol>
-                <li><strong>Diferencias (Adelante):</strong> <MathRenderer math="\Delta y_0 = 3" />, <MathRenderer math="\Delta^2 y_0 = 2" />.</li>
-                <li><strong>Variable auxiliar:</strong> <MathRenderer math="s = (x-1)/1" />.</li>
-                <li><strong>Polinomio:</strong> <MathRenderer math="P(x) = 1 + 3s + \frac{s(s-1)}{2}(2) = 1 + 3s + s^2 - s = s^2 + 2s + 1" block />.</li>
-              </ol>
-              <div className={styles.example}>
-                Sustituyendo <MathRenderer math="s = x-1" />: <MathRenderer math="P(x) = (x-1)^2 + 2(x-1) + 1 = x^2 - 2x + 1 + 2x - 2 + 1 = x^2" />. 
-                <strong>¡Exacto!</strong> Los datos correspondían a la función <MathRenderer math="y=x^2" />.
+              <h3><Info size={18} /> Resumen de Intuición</h3>
+              <ul>
+                <li><strong>Usa Diferencias Divididas cuando:</strong> Los puntos están "desordenados" o no tienen un patrón de distancia fijo.</li>
+                <li><strong>Usa Diferencias Finitas cuando:</strong> Los datos provienen de una tabla uniforme o un muestreo periódico.</li>
+              </ul>
+              <div className={styles.warningBox}>
+                <AlertCircle size={16} /> <strong>Recuerda:</strong> Una técnica es el motor general y la otra es una optimización matemática para cuando la geometría de los datos lo permite.
               </div>
             </section>
           </div>

@@ -4,62 +4,83 @@ import { SimpleFormulaDisplay } from '../../../components/results/SimpleFormulaD
 import { InterpolationChart } from '../../../components/visualizers/InterpolationChart';
 import { MathRenderer } from '../../../components/visualizers/MathRenderer';
 import { ExamplesGuide } from '../../../components/layout/ExamplesGuide';
+import { MathSyntaxGuide } from '../../../components/layout/MathSyntaxGuide';
 import { useDividedDifferences } from '../../../hooks/useDividedDifferences';
+import { AlertCircle, CheckCircle2, Calculator } from 'lucide-react';
+import clsx from 'clsx';
 import styles from '../../NewtonPage.module.css';
 
 export const DividedDifferencesPage: React.FC = () => {
   const { mutate, data, isPending, error } = useDividedDifferences();
-  const [initialFormValues, setInitialValues] = useState<any>({
+  const [currentParams, setCurrentParams] = useState<any>({
     puntos: [{ x: 1, y: 1 }, { x: 2, y: 4 }, { x: 4, y: 16 }],
-    x_a_evaluar: 3
+    x_a_evaluar: 3,
+    metodo: 'divididas'
   });
 
   // Ejecutar el cálculo inicial por defecto
   useEffect(() => {
-    mutate(initialFormValues);
+    mutate(currentParams);
   }, []);
 
+  const handleFormSubmit = (values: any) => {
+    setCurrentParams(values);
+    mutate(values);
+  };
+
   const handleSelectExample = (values: any) => {
-    setInitialValues(values);
+    setCurrentParams(values);
     mutate(values);
   };
 
   return (
     <div className={styles.pageContainer}>
       <header className={styles.header}>
-        <h1>Diferencias Divididas</h1>
+        <h1>Interpolación de Newton</h1>
         <p>Construye el polinomio interpolante a partir de un conjunto de puntos.</p>
       </header>
 
       <div className={styles.dashboardGrid}>
         {/* PANEL IZQUIERDO: CONFIGURACIÓN */}
         <aside>
+          <MathSyntaxGuide method="interpolation" />
           <ExamplesGuide method="interpolation" onSelect={handleSelectExample} />
           
           <DividedDifferencesForm 
-            onSubmit={mutate} 
+            onSubmit={handleFormSubmit} 
             isLoading={isPending} 
-            initialValues={initialFormValues}
+            initialValues={currentParams}
           />
-          
-          {error && (
-            <div style={{ background: '#fef2f2', padding: '1.25rem', borderRadius: '12px', color: '#b91c1c', display: 'flex', gap: '0.75rem', marginTop: '1rem', border: '1px solid #fecaca' }}>
-              <div>
-                <strong style={{ display: 'block', marginBottom: '0.25rem' }}>Error de Cálculo</strong>
-                <p style={{ margin: 0, fontSize: '0.875rem' }}>{error instanceof Error ? error.message : 'Ocurrió un error inesperado'}</p>
-              </div>
-            </div>
-          )}
         </aside>
 
         {/* PANEL DERECHO: RESULTADOS */}
         <main className={styles.mainContent}>
+          {/* Banner de Estado Inteligente (Error o Éxito) */}
+          {(error || data) && (
+            <div className={clsx(
+              styles.statusBanner,
+              error ? styles.statusWarning : styles.statusSuccess
+            )}>
+              {error ? <AlertCircle size={24} /> : <CheckCircle2 size={24} />}
+              <div>
+                <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
+                  {error ? 'Cálculo Detenido' : 'Interpolación Exitosa'}
+                </h4>
+                <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
+                  {error 
+                    ? ((error as any)?.response?.data?.detail || error.message)
+                    : `Se ha construido el polinomio de Newton usando ${currentParams.metodo === 'finitas' ? 'Diferencias Finitas' : 'Diferencias Divididas'}.`}
+                </p>
+              </div>
+            </div>
+          )}
+
           {data ? (
             <>
               {/* 1. Tabla de Diferencias */}
               <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
                 <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
-                  Tabla de Diferencias Divididas
+                  {currentParams.metodo === 'finitas' ? 'Tabla de Diferencias Finitas' : 'Tabla de Diferencias Divididas'}
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>

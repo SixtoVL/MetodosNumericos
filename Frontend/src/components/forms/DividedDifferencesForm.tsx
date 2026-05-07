@@ -17,11 +17,13 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
     { x: 4, y: 16 }
   ]);
   const [xAEvaluar, setXAEvaluar] = useState<number | string>(initialValues?.x_a_evaluar ?? 3);
+  const [metodo, setMetodo] = useState<'divididas' | 'finitas'>(initialValues?.metodo || 'divididas');
 
   useEffect(() => {
     if (initialValues) {
       setPuntos(initialValues.puntos);
       setXAEvaluar(initialValues.x_a_evaluar ?? '');
+      setMetodo(initialValues.metodo || 'divididas');
     }
   }, [initialValues]);
 
@@ -64,7 +66,8 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
 
     onSubmit({
       puntos: puntosProcesados,
-      x_a_evaluar: xAEvaluar === '' ? null : (typeof xAEvaluar === 'string' ? parseFloat(xAEvaluar) : xAEvaluar)
+      x_a_evaluar: xAEvaluar === '' ? null : (typeof xAEvaluar === 'string' ? parseFloat(xAEvaluar) : xAEvaluar),
+      metodo
     });
   };
 
@@ -123,6 +126,22 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
             ))}
           </div>
         </section>
+
+        {/* Toggle para el método */}
+        <div className={styles.toggleContainer}>
+          <div className={styles.toggleLabel}>
+            <span>Diferencias Finitas</span>
+            <span>Usar paso h constante</span>
+          </div>
+          <label className={styles.switch}>
+            <input 
+              type="checkbox" 
+              checked={metodo === 'finitas'}
+              onChange={(e) => setMetodo(e.target.checked ? 'finitas' : 'divididas')}
+            />
+            <span className={styles.slider}></span>
+          </label>
+        </div>
 
         <div className={styles.footerParams}>
           <div className={styles.field} style={{ marginBottom: '1.5rem' }}>
