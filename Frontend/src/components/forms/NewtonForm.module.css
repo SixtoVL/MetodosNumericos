@@ -287,3 +287,31 @@
 .switch input:checked + .slider:before {
   transform: translateX(20px);
 }
+
+/* Direction Selector Styles */
+.dirBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dirBtn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.dirBtnActive {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #2563eb;
+}

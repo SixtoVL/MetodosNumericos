@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Calculator } from 'lucide-react';
+import { Plus, Trash2, Calculator, ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import type { DividedDifferencesRequest, Point } from '../../schemas/interpolation.schema';
 import styles from './NewtonForm.module.css';
+import clsx from 'clsx';
 
 interface Props {
   onSubmit: (data: DividedDifferencesRequest) => void;
@@ -18,12 +19,14 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
   ]);
   const [xAEvaluar, setXAEvaluar] = useState<number | string>(initialValues?.x_a_evaluar ?? 3);
   const [metodo, setMetodo] = useState<'divididas' | 'finitas'>(initialValues?.metodo || 'divididas');
+  const [direccion, setDireccion] = useState<'adelante' | 'atras'>(initialValues?.direccion || 'adelante');
 
   useEffect(() => {
     if (initialValues) {
       setPuntos(initialValues.puntos);
       setXAEvaluar(initialValues.x_a_evaluar ?? '');
       setMetodo(initialValues.metodo || 'divididas');
+      setDireccion(initialValues.direccion || 'adelante');
     }
   }, [initialValues]);
 
@@ -67,7 +70,8 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
     onSubmit({
       puntos: puntosProcesados,
       x_a_evaluar: xAEvaluar === '' ? null : (typeof xAEvaluar === 'string' ? parseFloat(xAEvaluar) : xAEvaluar),
-      metodo
+      metodo,
+      direccion: metodo === 'finitas' ? direccion : undefined
     });
   };
 
@@ -142,6 +146,31 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
             <span className={styles.slider}></span>
           </label>
         </div>
+
+        {/* Selector de Dirección (solo si Finitas está activo) */}
+        {metodo === 'finitas' && (
+          <div className={styles.directionSelector} style={{ marginBottom: '2rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#64748b', marginBottom: '0.75rem' }}>
+              Dirección de la Tabla
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <button
+                type="button"
+                className={clsx(styles.dirBtn, direccion === 'adelante' && styles.dirBtnActive)}
+                onClick={() => setDireccion('adelante')}
+              >
+                <ArrowDownRight size={16} /> Adelante
+              </button>
+              <button
+                type="button"
+                className={clsx(styles.dirBtn, direccion === 'atras' && styles.dirBtnActive)}
+                onClick={() => setDireccion('atras')}
+              >
+                <ArrowUpRight size={16} /> Atrás
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className={styles.footerParams}>
           <div className={styles.field} style={{ marginBottom: '1.5rem' }}>

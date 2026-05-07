@@ -97,15 +97,25 @@ export const DividedDifferencesPage: React.FC = () => {
                       {data.tabla.map((fila, i) => (
                         <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
                           {fila.map((valor, j) => {
-                            // Los coeficientes están en la primera fila (i=0) para j >= 1
-                            const isCoefficient = (i === 0 && j >= 1);
+                            // Lógica de resaltado inteligente:
+                            let isCoefficient = false;
+                            if (currentParams.metodo === 'finitas' && currentParams.direccion === 'atras') {
+                              // Newton Atrás: Los coeficientes están en la diagonal inferior (último valor no nulo de cada columna j >= 1)
+                              const rowIdxForCoef = data.tabla.length - j;
+                              isCoefficient = (i === rowIdxForCoef && j >= 1);
+                            } else {
+                              // Newton Adelante o Divididas: Primera fila (i=0) para j >= 1
+                              isCoefficient = (i === 0 && j >= 1);
+                            }
+
                             return (
                               <td 
                                 key={j} 
                                 style={{ 
                                   padding: '0.75rem', 
                                   fontWeight: isCoefficient ? 'bold' : 'normal', 
-                                  color: isCoefficient ? '#3b82f6' : (valor === null ? 'transparent' : 'inherit')
+                                  color: isCoefficient ? '#3b82f6' : (valor === null ? 'transparent' : 'inherit'),
+                                  backgroundColor: isCoefficient ? '#eff6ff' : 'transparent'
                                 }}
                               >
                                 {valor !== null ? (typeof valor === 'number' ? valor.toFixed(4) : valor) : ''}

@@ -7,6 +7,7 @@ export interface DividedDifferencesRequest {
   puntos: Point[];
   x_a_evaluar?: number | null;
   metodo?: 'divididas' | 'finitas';
+  direccion?: 'adelante' | 'atras';
 }
 
 export interface DividedDifferencesResponse {

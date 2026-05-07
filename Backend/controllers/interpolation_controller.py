@@ -40,8 +40,8 @@ def solve_divided_differences(data: InterpolationSchema):
                     detail="Los puntos ingresados no tienen una distancia constante (equiespaciados). "
                            "Por favor, revisa tus datos o desactiva el toggle de Diferencias Finitas."
                 )
-            logger.info("Escenario detectado: Toggle ON + Puntos Equiespaciados -> Usando Diferencias Finitas")
-            resultado = finite_differences_method(data.puntos)
+            logger.info(f"Escenario detectado: Toggle ON + Puntos Equiespaciados ({data.direccion}) -> Usando Diferencias Finitas")
+            resultado = finite_differences_method(data.puntos, direccion=data.direccion)
         else:
             if es_equiespaciado:
                 logger.info("Escenario detectado: Toggle OFF + Puntos Equiespaciados -> Usando Diferencias Divididas")
