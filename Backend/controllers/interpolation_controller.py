@@ -41,24 +41,21 @@ def solve_divided_differences(data: InterpolationSchema):
                            "Por favor, revisa tus datos o desactiva el toggle de Diferencias Finitas."
                 )
             logger.info(f"Escenario detectado: Toggle ON + Puntos Equiespaciados ({data.direccion}) -> Usando Diferencias Finitas")
-            resultado = finite_differences_method(data.puntos, direccion=data.direccion)
+            resultado = finite_differences_method(data.puntos, direccion=data.direccion, x_a_evaluar=data.x_a_evaluar, pivote=data.pivote)
         else:
-            if es_equiespaciado:
-                logger.info("Escenario detectado: Toggle OFF + Puntos Equiespaciados -> Usando Diferencias Divididas")
-            else:
-                logger.info("Escenario detectado: Toggle OFF + Puntos Cualquiera -> Usando Diferencias Divididas")
+            logger.info("Escenario detectado: Toggle OFF -> Usando Diferencias Divididas")
             resultado = divided_differences_method(data.puntos)
         
         # 4. Evaluación del punto si se solicita
         if data.x_a_evaluar is not None:
             xa = data.x_a_evaluar
             coefs = resultado["coeficientes"]
-            puntos_x = resultado["puntos_x"]
+            nodos_x = resultado.get("nodos_x", resultado["puntos_x"])
             
             valor_evaluado = coefs[0]
             producto = 1.0
             for i in range(1, len(coefs)):
-                producto *= (xa - puntos_x[i-1])
+                producto *= (xa - nodos_x[i-1])
                 valor_evaluado += coefs[i] * producto
             
             resultado["valor_evaluado"] = {"x": xa, "y": valor_evaluado}

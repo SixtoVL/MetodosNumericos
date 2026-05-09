@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { DividedDifferencesForm } from '../../../components/forms/DividedDifferencesForm';
 import { SimpleFormulaDisplay } from '../../../components/results/SimpleFormulaDisplay';
 import { InterpolationChart } from '../../../components/visualizers/InterpolationChart';
@@ -6,31 +6,29 @@ import { MathRenderer } from '../../../components/visualizers/MathRenderer';
 import { ExamplesGuide } from '../../../components/layout/ExamplesGuide';
 import { MathSyntaxGuide } from '../../../components/layout/MathSyntaxGuide';
 import { useDividedDifferences } from '../../../hooks/useDividedDifferences';
+import { ExportExcelButton } from '../../../components/results/ExportExcelButton';
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, CheckCircle2, Calculator } from 'lucide-react';
 import clsx from 'clsx';
 import styles from '../../NewtonPage.module.css';
 
 export const DividedDifferencesPage: React.FC = () => {
-  const { mutate, data, isPending, error } = useDividedDifferences();
-  const [currentParams, setCurrentParams] = useState<any>({
-    puntos: [{ x: 1, y: 1 }, { x: 2, y: 4 }, { x: 4, y: 16 }],
-    x_a_evaluar: 3,
-    metodo: 'divididas'
-  });
-
-  // Ejecutar el cálculo inicial por defecto
-  useEffect(() => {
-    mutate(currentParams);
-  }, []);
+  const queryClient = useQueryClient();
+  const { mutate, data, isPending, error, formValues } = useDividedDifferences();
 
   const handleFormSubmit = (values: any) => {
-    setCurrentParams(values);
     mutate(values);
   };
 
   const handleSelectExample = (values: any) => {
-    setCurrentParams(values);
-    mutate(values);
+    queryClient.setQueryData(['interpolation-form-values'], values);
+  };
+
+  // Valores por defecto si no hay nada en caché
+  const initialValues = formValues || {
+    puntos: [{ x: 1, y: 1 }, { x: 2, y: 4 }, { x: 4, y: 16 }],
+    x_a_evaluar: 3,
+    metodo: 'divididas'
   };
 
   return (
@@ -49,7 +47,7 @@ export const DividedDifferencesPage: React.FC = () => {
           <DividedDifferencesForm 
             onSubmit={handleFormSubmit} 
             isLoading={isPending} 
-            initialValues={currentParams}
+            initialValues={initialValues}
           />
         </aside>
 
@@ -69,7 +67,7 @@ export const DividedDifferencesPage: React.FC = () => {
                 <p style={{ margin: 0, fontSize: '0.95rem', opacity: 0.9 }}>
                   {error 
                     ? ((error as any)?.response?.data?.detail || error.message)
-                    : `Se ha construido el polinomio de Newton usando ${currentParams.metodo === 'finitas' ? 'Diferencias Finitas' : 'Diferencias Divididas'}.`}
+                    : `Se ha construido el polinomio de Newton usando ${initialValues.metodo === 'finitas' ? 'Diferencias Finitas' : 'Diferencias Divididas'}.`}
                 </p>
               </div>
             </div>
@@ -79,9 +77,18 @@ export const DividedDifferencesPage: React.FC = () => {
             <>
               {/* 1. Tabla de Diferencias */}
               <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
-                  {currentParams.metodo === 'finitas' ? 'Tabla de Diferencias Finitas' : 'Tabla de Diferencias Divididas'}
-                </h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
+                  <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>
+                    {initialValues.metodo === 'finitas' ? 'Tabla de Diferencias Finitas' : 'Tabla de Diferencias Divididas'}
+                  </h3>
+                  <ExportExcelButton 
+                    data={{
+                      cabecera: ['xi', 'f[xi]', ...data.tabla[0].slice(2).map((_, i) => `Orden ${i + 1}`)],
+                      filas: data.tabla.map(fila => fila.map(v => v === null ? '' : v))
+                    }}
+                    fileName={`tabla_diferencias_${initialValues.metodo}.xlsx`}
+                  />
+                </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
                     <thead>
@@ -99,12 +106,18 @@ export const DividedDifferencesPage: React.FC = () => {
                           {fila.map((valor, j) => {
                             // Lógica de resaltado inteligente:
                             let isCoefficient = false;
-                            if (currentParams.metodo === 'finitas' && currentParams.direccion === 'atras') {
-                              // Newton Atrás: Los coeficientes están en la diagonal inferior (último valor no nulo de cada columna j >= 1)
-                              const rowIdxForCoef = data.tabla.length - j;
-                              isCoefficient = (i === rowIdxForCoef && j >= 1);
+                            const pivoteEfectivo = data.pivote_usado ?? 0;
+
+                            if (initialValues.metodo === 'finitas') {
+                              if (initialValues.direccion === 'atras') {
+                                // Newton Atrás: Diagonal que sube desde el pivote
+                                isCoefficient = (i === pivoteEfectivo - (j - 1) && j >= 1);
+                              } else {
+                                // Newton Adelante: Fila del pivote
+                                isCoefficient = (i === pivoteEfectivo && j >= 1);
+                              }
                             } else {
-                              // Newton Adelante o Divididas: Primera fila (i=0) para j >= 1
+                              // Newton Divididas (Estándar): Primera fila
                               isCoefficient = (i === 0 && j >= 1);
                             }
 
@@ -153,6 +166,11 @@ export const DividedDifferencesPage: React.FC = () => {
                   Polinomio Interpolante (Forma de Newton)
                 </h3>
                 <SimpleFormulaDisplay formula={data.polinomio_latex} />
+
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginTop: '1.5rem', marginBottom: '1rem' }}>
+                  Polinomio Reducido (Simplificado)
+                </h3>
+                <SimpleFormulaDisplay formula={data.polinomio_reducido_latex} />
                 
                 {data.valor_evaluado && (
                   <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#f0fdf4', borderRadius: '0.5rem', border: '1px solid #bbf7d0' }}>

@@ -8,6 +8,7 @@ export interface DividedDifferencesRequest {
   x_a_evaluar?: number | null;
   metodo?: 'divididas' | 'finitas';
   direccion?: 'adelante' | 'atras';
+  pivote?: number;
 }
 
 export interface DividedDifferencesResponse {
@@ -21,6 +22,8 @@ export interface DividedDifferencesResponse {
   polinomio_latex: string;
   puntos_x: number[];
   puntos_y: number[];
+  nodos_x: number[];
+  pivote_usado?: number;
   valor_evaluado?: {
     x: number;
     y: number;

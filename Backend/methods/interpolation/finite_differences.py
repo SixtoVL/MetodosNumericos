@@ -1,34 +1,57 @@
 import numpy as np
 import math
+from methods.interpolation.helpers.polynomial_utils import calculate_reduced_polynomial
 
-def finite_differences_method(puntos, direccion="adelante"):
+def finite_differences_method(puntos, direccion="adelante", x_a_evaluar=None, pivote=0):
     """
     Calcula la tabla de diferencias finitas y el procedimiento paso a paso.
-    Maneja tanto Newton hacia Adelante como Newton hacia Atrás.
+    Maneja tanto Newton hacia Adelante como Newton hacia Atrás permitiendo un pivote.
     """
     n = len(puntos)
-    x = np.array([p.x for p in puntos], dtype=float)
-    y = np.array([p.y for p in puntos], dtype=float)
-    h = x[1] - x[0]
+    x_vals = np.array([p.x for p in puntos], dtype=float)
+    y_vals = np.array([p.y for p in puntos], dtype=float)
+    h = x_vals[1] - x_vals[0]
     
+    # Validar pivote
+    if pivote < 0 or pivote >= n:
+        pivote = 0 if direccion == "adelante" else n - 1
+
     # Tabla de diferencias (no divididas, solo restas)
-    # tabla[i, j] guardará la diferencia de orden j que empieza en el índice i
     tabla = np.zeros((n, n))
-    tabla[:, 0] = y
+    tabla[:, 0] = y_vals
     
     pasos = []
     
-    # Calcular la tabla de diferencias (la misma para adelante y atrás)
+    # --- PASO 1: CÁLCULO DE H ---
+    pasos.append({
+        "orden": 0,
+        "descripcion": "Cálculo del tamaño del paso (h)",
+        "formula": f"h = x_1 - x_0 = {x_vals[1]:.4g} - {x_vals[0]:.4g} = {h:.4g}"
+    })
+
+    # --- PASO 2: CÁLCULO DE S (Si se evalúa un punto) ---
+    s = None
+    if x_a_evaluar is not None:
+        x_ref = x_vals[pivote]
+        simbolo_ref = f"x_{{{pivote}}}"
+        s = (x_a_evaluar - x_ref) / h
+        formula_s = f"s = \\frac{{x - {simbolo_ref}}}{{h}} = \\frac{{{x_a_evaluar:.4g} - {x_ref:.4g}}}{{{h:.4g}}} = {s:.4g}"
+            
+        pasos.append({
+            "orden": 0,
+            "descripcion": f"Cálculo del factor de interpolación (s) usando pivote en {simbolo_ref} para x = {x_a_evaluar:.4g}",
+            "formula": formula_s
+        })
+
+    # --- PASO 3: TABLA DE DIFERENCIAS ---
     for j in range(1, n):
         for i in range(n - j):
             resultado = tabla[i+1, j-1] - tabla[i, j-1]
             tabla[i, j] = resultado
             
-            # Usar notación Delta (Adelante) o Nabla (Atrás) según corresponda para los pasos
-            simbolo = "\\Delta" if direccion == "adelante" else "\\nabla"
-            subindice = i if direccion == "adelante" else i+j
-            
-            formula = f"{simbolo}^{{{j}}} y_{{{subindice}}} = {tabla[i+1, j-1]:.4g} - ({tabla[i, j-1]:.4g}) = {resultado:.4g}"
+            # En diferencias finitas, mostramos el cálculo de la diferencia
+            # Independientemente de la dirección, la tabla es la misma
+            formula = f"\\Delta^{{{j}}} y_{{{i}}} = {tabla[i+1, j-1]:.4g} - ({tabla[i, j-1]:.4g}) = {resultado:.4g}"
             
             pasos.append({
                 "orden": j,
@@ -39,50 +62,62 @@ def finite_differences_method(puntos, direccion="adelante"):
     # Selección de coeficientes y construcción del polinomio
     coefs_divididas = []
     
+    # El pivote determina qué "camino" tomamos en la tabla
     if direccion == "adelante":
-        # Newton Adelante usa la diagonal superior: tabla[0, k]
-        for k in range(n):
-            diff_finita = tabla[0, k]
+        # Newton Adelante desde el pivote: usa tabla[pivote, k]
+        # P(x) = y_p + s*Dy_p + s(s-1)/2! * D^2y_p + ...
+        # Los nodos de Newton son x_p, x_p+1, x_p+2...
+        max_k = n - pivote
+        x_newton = x_vals[pivote:].tolist()
+        
+        for k in range(max_k):
+            diff_finita = tabla[pivote, k]
             factorial_k = math.factorial(k)
             denominador = factorial_k * (h ** k)
             coefs_divididas.append(diff_finita / denominador)
             
-        # P(x) = y0 + f[x0,x1](x-x0) + f[x0,x1,x2](x-x0)(x-x1) + ...
         terminos_latex = [f"{coefs_divididas[0]:.4g}"]
-        for i in range(1, n):
+        for i in range(1, len(coefs_divididas)):
             coef = coefs_divididas[i]
             if abs(coef) < 1e-10: continue
             signo = "+" if coef >= 0 else "-"
             valor = abs(coef)
-            factor = "".join([f"(x {'-' if x[k]>=0 else '+'} {abs(x[k]):.4g})" for k in range(i)])
-            terminos_latex.append(f"{signo} {valor:.4g}{factor}")
+            factors_list = [f"(x {'-' if x_newton[k]>=0 else '+'} {abs(x_newton[k]):.4g})" for k in range(i)]
+            factor_latex = "".join(factors_list)
+            terminos_latex.append(f"{signo} {valor:.4g}{factor_latex}")
             
     else:
-        # Newton Atrás usa la diagonal inferior: tabla[n-k-1, k]
-        # Nota: f[xn, xn-1, ..., xn-k] = Nabla^k yn / (k! * h^k)
-        for k in range(n):
-            diff_finita = tabla[n-k-1, k] # Última diferencia calculada en cada columna
+        # Newton Atrás desde el pivote: usa tabla[pivote-k, k]
+        # P(x) = y_p + s*Ny_p + s(s+1)/2! * N^2y_p + ...
+        # Los nodos de Newton son x_p, x_p-1, x_p-2...
+        max_k = pivote + 1
+        x_newton = x_vals[:pivote+1][::-1].tolist()
+        
+        for k in range(max_k):
+            diff_finita = tabla[pivote - k, k] 
             factorial_k = math.factorial(k)
             denominador = factorial_k * (h ** k)
             coefs_divididas.append(diff_finita / denominador)
             
-        # P(x) = yn + f[xn, xn-1](x-xn) + f[xn, xn-1, xn-2](x-xn)(x-xn-1) + ...
         terminos_latex = [f"{coefs_divididas[0]:.4g}"]
-        for i in range(1, n):
+        for i in range(1, len(coefs_divididas)):
             coef = coefs_divididas[i]
             if abs(coef) < 1e-10: continue
             signo = "+" if coef >= 0 else "-"
             valor = abs(coef)
-            # Factores son (x-xn), (x-xn)(x-xn-1), etc.
-            factor = "".join([f"(x {'-' if x[n-1-k]>=0 else '+'} {abs(x[n-1-k]):.4g})" for k in range(i)])
-            terminos_latex.append(f"{signo} {valor:.4g}{factor}")
+            factors_list = [f"(x {'-' if x_newton[k]>=0 else '+'} {abs(x_newton[k]):.4g})" for k in range(i)]
+            factor_latex = "".join(factors_list)
+            terminos_latex.append(f"{signo} {valor:.4g}{factor_latex}")
 
     polinomio_latex = " ".join(terminos_latex)
+    
+    # --- CALCULO DEL POLINOMIO REDUCIDO CON HELPER ---
+    polinomio_reducido_latex = calculate_reduced_polynomial(coefs_divididas, x_newton)
     
     # Formatear la tabla para la respuesta (triangular superior)
     tabla_completa = []
     for i in range(n):
-        fila = [float(x[i])] + [float(v) for v in tabla[i, : (n - i)]]
+        fila = [float(x_vals[i])] + [float(v) for v in tabla[i, : (n - i)]]
         while len(fila) < n + 1:
             fila.append(None)
         tabla_completa.append(fila)
@@ -92,6 +127,10 @@ def finite_differences_method(puntos, direccion="adelante"):
         "tabla": tabla_completa,
         "pasos": pasos,
         "polinomio_latex": f"P(x) = {polinomio_latex}",
-        "puntos_x": x.tolist(),
-        "puntos_y": y.tolist()
+        "polinomio_reducido_latex": f"P(x) = {polinomio_reducido_latex}",
+        "puntos_x": x_vals.tolist(),
+        "puntos_y": y_vals.tolist(),
+        "nodos_x": x_newton,
+        "s": s,
+        "pivote_usado": pivote
     }

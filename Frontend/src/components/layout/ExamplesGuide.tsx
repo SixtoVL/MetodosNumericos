@@ -111,12 +111,35 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
 
     return [
       {
+        title: "Newton hacia Adelante",
+        description: "Diferencias finitas con puntos equiespaciados (evaluación al inicio).",
+        difficulty: "Fácil",
+        values: {
+          puntos: [{ x: 10, y: 0.1736 }, { x: 20, y: 0.3420 }, { x: 30, y: 0.5000 }, { x: 40, y: 0.6428 }],
+          x_a_evaluar: 15,
+          metodo: 'finitas',
+          direccion: 'adelante'
+        }
+      },
+      {
+        title: "Newton hacia Atrás",
+        description: "Mismos puntos que el anterior, pero con evaluación al final de la tabla.",
+        difficulty: "Fácil",
+        values: {
+          puntos: [{ x: 10, y: 0.1736 }, { x: 20, y: 0.3420 }, { x: 30, y: 0.5000 }, { x: 40, y: 0.6428 }],
+          x_a_evaluar: 35,
+          metodo: 'finitas',
+          direccion: 'atras'
+        }
+      },
+      {
         title: "Interpolación 3 Puntos",
         description: "Ejemplo básico: Parábola simple que pasa por 3 nodos.",
         difficulty: "Fácil",
         values: {
           puntos: [{ x: 1, y: 1 }, { x: 2, y: 4 }, { x: 4, y: 16 }],
-          x_a_evaluar: 3
+          x_a_evaluar: 3,
+          metodo: 'divididas'
         }
       },
       {
@@ -125,7 +148,8 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
         difficulty: "Medio",
         values: {
           puntos: [{ x: -1, y: -1 }, { x: 0, y: 0 }, { x: 1, y: 1 }, { x: 2, y: 8 }],
-          x_a_evaluar: 0.5
+          x_a_evaluar: 0.5,
+          metodo: 'divididas'
         }
       },
       {
@@ -134,7 +158,8 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
         difficulty: "Avanzado",
         values: {
           puntos: [{ x: 0, y: 1 }, { x: 1, y: 2.71 }, { x: 2, y: 7.38 }, { x: 3, y: 20.08 }, { x: 4, y: 54.59 }],
-          x_a_evaluar: 2.5
+          x_a_evaluar: 2.5,
+          metodo: 'divididas'
         }
       }
     ];
@@ -186,7 +211,12 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
                     <p>{ex.description}</p>
                     <div className={styles.cardFooter}>
                       <Activity size={14} />
-                      <span>{Array.isArray(ex.values.funciones || ex.values.g_func) ? ex.values.funciones?.length || ex.values.g_func?.length : 1} Variables</span>
+                      <span>
+                        {method === 'interpolation' 
+                          ? `${ex.values.puntos.length} Puntos` 
+                          : `${Array.isArray(ex.values.funciones || ex.values.g_func) ? ex.values.funciones?.length || ex.values.g_func?.length : 1} Variables`
+                        }
+                      </span>
                       <ChevronRight size={16} className={styles.arrow} />
                     </div>
                   </div>

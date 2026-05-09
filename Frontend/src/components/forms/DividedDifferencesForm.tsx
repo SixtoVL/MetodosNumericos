@@ -20,6 +20,7 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
   const [xAEvaluar, setXAEvaluar] = useState<number | string>(initialValues?.x_a_evaluar ?? 3);
   const [metodo, setMetodo] = useState<'divididas' | 'finitas'>(initialValues?.metodo || 'divididas');
   const [direccion, setDireccion] = useState<'adelante' | 'atras'>(initialValues?.direccion || 'adelante');
+  const [pivote, setPivote] = useState<number>(initialValues?.pivote || 0);
 
   useEffect(() => {
     if (initialValues) {
@@ -27,6 +28,7 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
       setXAEvaluar(initialValues.x_a_evaluar ?? '');
       setMetodo(initialValues.metodo || 'divididas');
       setDireccion(initialValues.direccion || 'adelante');
+      setPivote(initialValues.pivote || 0);
     }
   }, [initialValues]);
 
@@ -37,6 +39,9 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
   const handleRemovePoint = (index: number) => {
     if (puntos.length > 2) {
       setPuntos(puntos.filter((_, i) => i !== index));
+      if (pivote >= puntos.length - 1) {
+        setPivote(Math.max(0, puntos.length - 2));
+      }
     }
   };
 
@@ -71,7 +76,8 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
       puntos: puntosProcesados,
       x_a_evaluar: xAEvaluar === '' ? null : (typeof xAEvaluar === 'string' ? parseFloat(xAEvaluar) : xAEvaluar),
       metodo,
-      direccion: metodo === 'finitas' ? direccion : undefined
+      direccion: metodo === 'finitas' ? direccion : undefined,
+      pivote: metodo === 'finitas' ? pivote : undefined
     });
   };
 
@@ -147,27 +153,49 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
           </label>
         </div>
 
-        {/* Selector de Dirección (solo si Finitas está activo) */}
+        {/* Configuración adicional para Finitas */}
         {metodo === 'finitas' && (
-          <div className={styles.directionSelector} style={{ marginBottom: '2rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#64748b', marginBottom: '0.75rem' }}>
-              Dirección de la Tabla
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-              <button
-                type="button"
-                className={clsx(styles.dirBtn, direccion === 'adelante' && styles.dirBtnActive)}
-                onClick={() => setDireccion('adelante')}
+          <div className={styles.finitasConfig} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
+            {/* Selector de Dirección */}
+            <div className={styles.directionSelector}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#64748b', marginBottom: '0.75rem' }}>
+                Dirección de la Tabla
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  className={clsx(styles.dirBtn, direccion === 'adelante' && styles.dirBtnActive)}
+                  onClick={() => setDireccion('adelante')}
+                >
+                  <ArrowDownRight size={16} /> Adelante
+                </button>
+                <button
+                  type="button"
+                  className={clsx(styles.dirBtn, direccion === 'atras' && styles.dirBtnActive)}
+                  onClick={() => setDireccion('atras')}
+                >
+                  <ArrowUpRight size={16} /> Atrás
+                </button>
+              </div>
+            </div>
+
+            {/* Selector de Pivote */}
+            <div className={styles.pivotSelector}>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#64748b', marginBottom: '0.75rem' }}>
+                Punto de Referencia (Pivote)
+              </label>
+              <select 
+                value={pivote} 
+                onChange={(e) => setPivote(parseInt(e.target.value))}
+                className={styles.mainInput}
+                style={{ width: '100%', cursor: 'pointer' }}
               >
-                <ArrowDownRight size={16} /> Adelante
-              </button>
-              <button
-                type="button"
-                className={clsx(styles.dirBtn, direccion === 'atras' && styles.dirBtnActive)}
-                onClick={() => setDireccion('atras')}
-              >
-                <ArrowUpRight size={16} /> Atrás
-              </button>
+                {puntos.map((_, idx) => (
+                  <option key={idx} value={idx}>
+                    Punto {idx} (x={puntos[idx].x || '?'})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         )}
