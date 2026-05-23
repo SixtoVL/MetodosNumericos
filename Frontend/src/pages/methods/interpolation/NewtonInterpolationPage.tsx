@@ -1,20 +1,20 @@
 import React from 'react';
-import { DividedDifferencesForm } from '../../../components/forms/DividedDifferencesForm';
+import { NewtonInterpolationForm } from '../../../components/forms/NewtonInterpolationForm';
 import { SimpleFormulaDisplay } from '../../../components/results/SimpleFormulaDisplay';
 import { InterpolationChart } from '../../../components/visualizers/InterpolationChart';
 import { MathRenderer } from '../../../components/visualizers/MathRenderer';
 import { ExamplesGuide } from '../../../components/layout/ExamplesGuide';
 import { MathSyntaxGuide } from '../../../components/layout/MathSyntaxGuide';
-import { useDividedDifferences } from '../../../hooks/useDividedDifferences';
+import { useNewtonInterpolation } from '../../../hooks/useNewtonInterpolation';
 import { ExportExcelButton } from '../../../components/results/ExportExcelButton';
 import { useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, CheckCircle2, Calculator } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
 import styles from '../../NewtonPage.module.css';
 
-export const DividedDifferencesPage: React.FC = () => {
+export const NewtonInterpolationPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const { mutate, data, isPending, error, formValues } = useDividedDifferences();
+  const { mutate, data, isPending, error, formValues } = useNewtonInterpolation();
 
   const handleFormSubmit = (values: any) => {
     mutate(values);
@@ -44,7 +44,7 @@ export const DividedDifferencesPage: React.FC = () => {
           <MathSyntaxGuide method="interpolation" />
           <ExamplesGuide method="interpolation" onSelect={handleSelectExample} />
           
-          <DividedDifferencesForm 
+          <NewtonInterpolationForm 
             onSubmit={handleFormSubmit} 
             isLoading={isPending} 
             initialValues={initialValues}

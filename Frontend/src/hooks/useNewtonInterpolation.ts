@@ -5,7 +5,7 @@ import type { DividedDifferencesRequest, DividedDifferencesResponse } from '../s
 /**
  * Hook para manejar la ejecución de Interpolación (Newton/Finitas) con persistencia de estado
  */
-export const useDividedDifferences = () => {
+export const useNewtonInterpolation = () => {
   const queryClient = useQueryClient();
 
   // 1. Hook de Mutación: Ejecuta el cálculo y guarda resultados en el caché

@@ -10,7 +10,6 @@ const InterpolationTheory: React.FC = () => {
     2: useRef<HTMLDivElement>(null),
     3: useRef<HTMLDivElement>(null),
     4: useRef<HTMLDivElement>(null),
-    5: useRef<HTMLDivElement>(null),
   };
 
   const toggleModule = (id: number) => {
@@ -162,7 +161,7 @@ const InterpolationTheory: React.FC = () => {
         )}
       </div>
 
-      {/* Módulo 3: Diferencias Divididas */}
+      {/* Módulo 3: Interpolación de Newton */}
       <div 
         className={`${styles.moduleWrapper} ${activeModules.includes(3) ? styles.active : ''}`}
         ref={moduleRefs[3]}
@@ -170,7 +169,7 @@ const InterpolationTheory: React.FC = () => {
         <button className={styles.moduleHeader} onClick={() => toggleModule(3)}>
           <div className={styles.moduleTitle}>
             <div className={styles.moduleNumber}>3</div>
-            <h2>Diferencias Divididas</h2>
+            <h2>Interpolación de Newton</h2>
           </div>
           <ChevronDown className={styles.icon} size={20} />
         </button>
@@ -179,175 +178,177 @@ const InterpolationTheory: React.FC = () => {
           <div className={styles.moduleContent}>
             <section className={styles.section}>
               <h3><Target size={18} /> Objetivo del módulo</h3>
-              <p>
-                Desarrollar el concepto de diferencias divididas como herramienta fundamental para la construcción eficiente de polinomios interpolantes, comprender su interpretación matemática y su relación directa con la forma de Newton.
-              </p>
+              <p>Desarrollar la forma de interpolación de Newton basada en el concepto de diferencias, tanto para puntos con espaciamiento arbitrario como para datos equiespaciados, comprendiendo sus ventajas computacionales e incrementales.</p>
             </section>
 
             <section className={styles.section}>
-              <h3><GitFork size={18} /> Idea Fundamental</h3>
-              <p>
-                Aunque la interpolación de Lagrange proporciona una solución explícita, no es eficiente computacionalmente cuando el número de puntos es grande o cuando se añaden nuevos datos.
-              </p>
-              <div className={styles.infoBox}>
-                Las diferencias divididas permiten:
-                <ul>
-                  <li>Construir el polinomio de forma <strong>incremental</strong>.</li>
-                  <li><strong>Reutilizar cálculos previos</strong> al añadir nuevos nodos.</li>
-                  <li>Facilitar la implementación de la interpolación de Newton.</li>
-                </ul>
-              </div>
+              <h3><PlusSquare size={18} /> Idea fundamental</h3>
+              <p>El polinomio de Newton construye la solución de forma <strong>incremental</strong>. Esto permite agregar nuevos puntos sin reconstruir todo el cálculo desde cero, siendo significativamente más eficiente que la forma de Lagrange para grandes conjuntos de datos.</p>
+              <MathRenderer 
+                math="P_n(x) = a_0 + a_1(x - x_0) + a_2(x - x_0)(x - x_1) + \cdots + a_n(x - x_0)\dots(x - x_{n-1})" 
+                block 
+              />
             </section>
 
-            <section className={styles.section}>
-              <h3><BookOpen size={18} /> Conocimientos Previos</h3>
-              <p>Para entender las diferencias divididas, es útil recordar:</p>
-              <ul>
-                <li><strong>Pendiente de una recta:</strong> La medida de inclinación entre dos puntos es <MathRenderer math="m = \frac{y_1 - y_0}{x_1 - x_0}" />, que es la base del primer orden.</li>
-                <li><strong>Recursividad:</strong> Un proceso donde definimos algo en términos de sí mismo pero con casos más simples.</li>
-              </ul>
-            </section>
-
-            <section className={styles.section}>
-              <h3><PlusSquare size={18} /> ¿De dónde sale esta idea? (Origen)</h3>
-              <p>
-                Surge al plantear el polinomio en <strong>Forma de Newton</strong>:
-              </p>
-              <MathRenderer math="P(x) = a_0 + a_1(x - x_0) + a_2(x - x_0)(x - x_1) + \dots" block />
-              <p>
-                Al intentar despejar los coeficientes <MathRenderer math="a_i" /> evaluando en cada nodo, los matemáticos descubrieron que estos valores repetitivos podían calcularse mediante un algoritmo recursivo: las diferencias divididas.
-              </p>
-
-              <div className={styles.example}>
-                <strong>Demostración del despeje:</strong>
-                <p>Si evaluamos el polinomio en los primeros puntos, el proceso de "limpieza" de variables revela el patrón:</p>
-                <ol>
-                  <li>
-                    <strong>En <MathRenderer math="x_0" />:</strong> <MathRenderer math="f(x_0) = a_0" />. 
-                    Por lo tanto, <MathRenderer math="a_0 = f[x_0]" />.
-                  </li>
-                  <li>
-                    <strong>En <MathRenderer math="x_1" />:</strong> <MathRenderer math="f(x_1) = a_0 + a_1(x_1 - x_0)" />.
-                    Sustituyendo <MathRenderer math="a_0" /> y despejando <MathRenderer math="a_1" />:
-                    <MathRenderer math="a_1 = \frac{f(x_1) - f(x_0)}{x_1 - x_0} = f[x_0, x_1]" block />
-                  </li>
-                  <li>
-                    <strong>En <MathRenderer math="x_2" />:</strong> <MathRenderer math="f(x_2) = a_0 + a_1(x_2 - x_0) + a_2(x_2 - x_0)(x_2 - x_1)" />.
-                    Al despejar <MathRenderer math="a_2" />, surge una estructura que resta las dos "pendientes" anteriores:
-                    <MathRenderer math="a_2 = \frac{\frac{f(x_2) - f(x_1)}{x_2 - x_1} - \frac{f(x_1) - f(x_0)}{x_1 - x_0}}{x_2 - x_0} = f[x_0, x_1, x_2]" block />
-                  </li>
-                </ol>
-                <p style={{ fontSize: '0.9rem', color: '#64748b' }}>
-                  Este patrón de "diferencia de diferencias" es el que da nombre al método y permite que el cálculo sea recursivo.
+            {/* SUBSECCIÓN 1: DIFERENCIAS DIVIDIDAS */}
+            <div className={styles.subModule}>
+              <h2 className={styles.subModuleTitle}>1. Diferencias Divididas</h2>
+              <section className={styles.section}>
+                <p>
+                  Las diferencias divididas son la herramienta fundamental para calcular los coeficientes <MathRenderer math="a_i" /> cuando los puntos tienen cualquier distribución en el eje X.
                 </p>
-              </div>
-            </section>
+                <div className={styles.infoBox}>
+                  <strong>Ventajas Clave:</strong>
+                  <ul>
+                    <li>Construcción incremental del polinomio.</li>
+                    <li>Reutilización de cálculos previos al añadir datos.</li>
+                    <li>No requieren que los puntos estén a la misma distancia.</li>
+                  </ul>
+                </div>
+              </section>
 
-            <section className={styles.section}>
-              <h3>Definición Formal y Recursiva</h3>
-              <p>Sea un conjunto de puntos <MathRenderer math="\{(x_i, y_i)\}" /> con <MathRenderer math="x_i" /> distintos:</p>
-              <ul>
-                <li><strong>Orden Cero:</strong> Es simplemente el valor de la función: 
-                  <MathRenderer math="f[x_i] = y_i" block />
-                </li>
-                <li><strong>Primer Orden:</strong> Representa la pendiente entre dos puntos: 
-                  <MathRenderer math="f[x_i, x_{i+1}] = \frac{f[x_{i+1}] - f[x_i]}{x_{i+1} - x_i}" block />
-                </li>
-                <li><strong>Orden General (k):</strong> Se define a partir de los órdenes anteriores: 
-                  <MathRenderer math="f[x_i, x_{i+1}, \dots, x_{i+k}] = \frac{f[x_{i+1}, \dots, x_{i+k}] - f[x_i, \dots, x_{i+k-1}]}{x_{i+k} - x_i}" block />
-                </li>
-              </ul>
-            </section>
+              <section className={styles.section}>
+                <h3><BookOpen size={18} /> Conocimientos Previos</h3>
+                <ul>
+                  <li><strong>Pendiente de una recta:</strong> La base del primer orden es <MathRenderer math="m = \frac{y_1 - y_0}{x_1 - x_0}" />.</li>
+                  <li><strong>Recursividad:</strong> Definir un proceso en términos de sí mismo con casos más simples.</li>
+                </ul>
+              </section>
 
-            <section className={styles.section}>
-              <h3><Info size={18} /> Interpretación e Intuición</h3>
-              <ul>
-                <li><strong>Pendientes secantes:</strong> Las de primer orden miden la inclinación local.</li>
-                <li><strong>Generalización de Derivadas:</strong> Las de orden superior capturan la "aceleración" o variación de la variación (curvatura).</li>
-                <li><strong>Variación Progresiva:</strong> Permiten observar cómo cambia el comportamiento de la función a medida que integramos más información.</li>
-              </ul>
-            </section>
-
-            <section className={styles.section}>
-              <h3>Propiedades Importantes</h3>
-              <ol>
-                <li><strong>Simetría:</strong> No dependen del orden de los puntos. <MathRenderer math="f[x_0, x_1] = f[x_1, x_0]" />.</li>
-                <li><strong>Linealidad:</strong> El operador de diferencia dividida es lineal respecto a las funciones.</li>
-                <li><strong>Relación con derivadas:</strong> Si los nodos coinciden (límite), se relacionan con la derivada de orden k: <MathRenderer math="f[x, \dots, x] = \frac{f^{(k)}(x)}{k!}" />.</li>
-                <li><strong>Unicidad:</strong> Determinan de manera única los coeficientes del polinomio interpolante.</li>
-              </ol>
-            </section>
-
-            <section className={styles.section}>
-              <h3><Table size={18} /> Tabla de Diferencias Divididas</h3>
-              <p>Se organizan visualmente para facilitar el cálculo por columnas:</p>
-              <div className={styles.infoBox} style={{ overflowX: 'auto' }}>
-                <MathRenderer math="
-                \begin{array}{c|c|c|c|c}
-                x_i & f[x_i] & f[x_i,x_{i+1}] & f[x_i,x_{i+1},x_{i+2}] & \cdots \\
-                \hline
-                x_0 & y_0 & & & \\
-                x_1 & y_1 & f[x_0,x_1] & & \\
-                x_2 & y_2 & f[x_1,x_2] & f[x_0,x_1,x_2] & \\
-                \vdots & \vdots & \vdots & \vdots & \ddots
-                \end{array}" block />
-              </div>
-              <p><strong>Regla de construcción:</strong> Para el denominador, siempre restas el <MathRenderer math="x" /> del extremo final del intervalo menos el del extremo inicial.</p>
-            </section>
-
-            <section className={styles.section}>
-              <h3>Interpretación como Coeficientes</h3>
-              <p>Las diferencias de la <strong>diagonal superior</strong> (o primera fila según la tabla) son los coeficientes <MathRenderer math="a_k" />:</p>
-              <ul>
-                <li><MathRenderer math="f[x_0]" />: Término constante.</li>
-                <li><MathRenderer math="f[x_0, x_1]" />: Coeficiente lineal.</li>
-                <li><MathRenderer math="f[x_0, x_1, x_2]" />: Coeficiente cuadrático.</li>
-              </ul>
-            </section>
-
-            <section className={styles.section}>
-              <h3><Zap size={18} /> Ventajas y Desafíos</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <section className={styles.section}>
+                <h3><PlusSquare size={18} /> ¿De dónde sale esta idea? (Origen)</h3>
+                <p>Surge al despejar los coeficientes <MathRenderer math="a_i" /> de la forma de Newton. Al evaluar en cada nodo, se descubre un patrón recursivo:</p>
                 <div className={styles.example}>
-                  <strong>Ventajas:</strong>
-                  <ul>
-                    <li>Construcción incremental.</li>
-                    <li>Más eficientes que Lagrange.</li>
-                    <li>Fácil actualización de datos.</li>
-                  </ul>
+                  <ol>
+                    <li><strong>En <MathRenderer math="x_0" />:</strong> <MathRenderer math="a_0 = f[x_0]" /></li>
+                    <li><strong>En <MathRenderer math="x_1" />:</strong> <MathRenderer math="a_1 = \frac{f(x_1) - f(x_0)}{x_1 - x_0} = f[x_0, x_1]" /></li>
+                    <li><strong>En <MathRenderer math="x_2" />:</strong> <MathRenderer math="a_2 = f[x_0, x_1, x_2]" /> (Diferencia de pendientes)</li>
+                  </ol>
                 </div>
-                <div className={styles.warningBox}>
-                  <strong>Desafíos Numéricos:</strong>
-                  <ul>
-                    <li>Sensibilidad a puntos muy cercanos.</li>
-                    <li>Acumulación de error de redondeo.</li>
-                    <li>Dependencia de la distribución de nodos.</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
+              </section>
 
-            <section className={styles.section}>
-              <h3><PlusSquare size={18} /> Ejemplo Paso a Paso</h3>
-              <p>Dados los puntos: <MathRenderer math="(1,1), (2,4), (4,16)" />.</p>
-              <div className={styles.example}>
+              <section className={styles.section}>
+                <h3>Definición Formal y Recursiva</h3>
+                <ul>
+                  <li><strong>Orden 0:</strong> <MathRenderer math="f[x_i] = y_i" block /></li>
+                  <li><strong>Orden 1:</strong> <MathRenderer math="f[x_i, x_{i+1}] = \frac{f[x_{i+1}] - f[x_i]}{x_{i+1} - x_i}" block /></li>
+                  <li><strong>Orden k:</strong> <MathRenderer math="f[x_i, \dots, x_{i+k}] = \frac{f[x_{i+1}, \dots, x_{i+k}] - f[x_i, \dots, x_{i+k-1}]}{x_{i+k} - x_i}" block /></li>
+                </ul>
+              </section>
+
+              <section className={styles.section}>
+                <h3>Propiedades Importantes</h3>
                 <ol>
-                  <li><strong>Orden 0:</strong> <MathRenderer math="f[x_0]=1, f[x_1]=4, f[x_2]=16" />.</li>
-                  <li><strong>Orden 1:</strong> 
-                    <MathRenderer math="f[x_0,x_1]=\frac{4-1}{2-1}=3" /> y <MathRenderer math="f[x_1,x_2]=\frac{16-4}{4-2}=6" />.
-                  </li>
-                  <li><strong>Orden 2:</strong> 
-                    <MathRenderer math="f[x_0,x_1,x_2]=\frac{6-3}{4-1}=1" />.
-                  </li>
+                  <li><strong>Simetría:</strong> No dependen del orden de los puntos.</li>
+                  <li><strong>Linealidad:</strong> El operador es lineal respecto a las funciones.</li>
+                  <li><strong>Relación con derivadas:</strong> En el límite, <MathRenderer math="f[x, \dots, x] = \frac{f^{(k)}(x)}{k!}" />.</li>
                 </ol>
-                <p><strong>Resultado:</strong> Coeficientes obtenidos: <MathRenderer math="1, 3, 1" />.</p>
+              </section>
+
+              <section className={styles.section}>
+                <h3><Table size={18} /> Tabla de Diferencias Divididas</h3>
+                <div className={styles.infoBox} style={{ overflowX: 'auto' }}>
+                  <MathRenderer math="
+                  \begin{array}{c|c|c|c|c}
+                  x_i & f[x_i] & f[x_i,x_{i+1}] & f[x_i,x_{i+1},x_{i+2}] & \cdots \\
+                  \hline
+                  x_0 & y_0 & \mathbf{a_1} & \mathbf{a_2} & \\
+                  x_1 & y_1 & f[x_1,x_2] & f[x_1,x_2,x_3] & \\
+                  x_2 & y_2 & f[x_2,x_3] & \vdots & \\
+                  \vdots & \vdots & \vdots & & \ddots
+                  \end{array}" block />
+                </div>
+                <p>Los coeficientes <MathRenderer math="a_i" /> son los valores de la <strong>primera fila</strong>.</p>
+              </section>
+
+              <section className={styles.section}>
+                <h3><Zap size={18} /> Ventajas y Desafíos</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className={styles.example}>
+                    <strong>Ventajas:</strong>
+                    <ul>
+                      <li>Construcción incremental.</li>
+                      <li>Eficiencia en actualización.</li>
+                    </ul>
+                  </div>
+                  <div className={styles.warningBox}>
+                    <strong>Desafíos:</strong>
+                    <ul>
+                      <li>Sensibilidad a puntos cercanos.</li>
+                      <li>Error de redondeo.</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <section className={styles.section}>
+                <h3><PlusSquare size={18} /> Ejemplo Paso a Paso</h3>
+                <p>Puntos: <MathRenderer math="(1,1), (2,4), (4,16)" />.</p>
+                <div className={styles.example}>
+                  <ul>
+                    <li><MathRenderer math="f[x_0,x_1]=\frac{4-1}{2-1}=3" /></li>
+                    <li><MathRenderer math="f[x_1,x_2]=\frac{16-4}{4-2}=6" /></li>
+                    <li><MathRenderer math="f[x_0,x_1,x_2]=\frac{6-3}{4-1}=1" /></li>
+                  </ul>
+                  <strong>Resultado:</strong> Coeficientes <MathRenderer math="a_0=1, a_1=3, a_2=1" />.
+                </div>
+              </section>
+            </div>
+
+            <hr className={styles.divider} />
+
+            {/* SUBSECCIÓN 2: DIFERENCIAS FINITAS */}
+            <div className={styles.subModule}>
+              <h2 className={styles.subModuleTitle}>2. Diferencias Finitas</h2>
+              <section className={styles.section}>
+                <p>
+                  Cuando los datos están equiespaciados (paso <MathRenderer math="h" /> constante), las diferencias divididas se simplifican a <strong>Diferencias Finitas</strong>, eliminando la necesidad de divisiones en cada paso de la tabla.
+                </p>
+                <MathRenderer math="x_{i+1} - x_i = h \quad (\text{constante})" block />
+              </section>
+
+              <section className={styles.section}>
+                <h3>La Relación Matemática</h3>
+                <p>Las diferencias finitas son una versión optimizada. La relación con las divididas es:</p>
+                <MathRenderer math="f[x_0, x_1, \dots, x_k] = \frac{\Delta^k y_0}{k! h^k}" block />
+              </section>
+
+              <div className={styles.methodGrid}>
+                {/* 2.1 Newton hacia adelante */}
+                <div className={styles.infoBox} style={{ borderLeft: '4px solid #3b82f6' }}>
+                  <h3>2.1 Newton hacia adelante (Forward)</h3>
+                  <p>Se utiliza cuando el valor a interpolar <MathRenderer math="x" /> está cerca del <strong>inicio</strong> de la tabla. Usa el operador <MathRenderer math="\Delta" />.</p>
+                  <MathRenderer math="\Delta y_i = y_{i+1} - y_i" block />
+                  <p><strong>Fórmula:</strong></p>
+                  <MathRenderer math="P(x) = y_0 + s\Delta y_0 + \frac{s(s-1)}{2!}\Delta^2 y_0 + \dots" block />
+                  <p style={{ fontSize: '0.85rem' }}>Donde <MathRenderer math="s = (x - x_0)/h" /></p>
+                </div>
+
+                {/* 2.2 Newton hacia atrás */}
+                <div className={styles.infoBox} style={{ borderLeft: '4px solid #10b981' }}>
+                  <h3>2.2 Newton hacia atrás (Backward)</h3>
+                  <p>Se utiliza cuando el valor <MathRenderer math="x" /> está cerca del <strong>final</strong> de la tabla. Usa el operador <MathRenderer math="\nabla" />.</p>
+                  <MathRenderer math="\nabla y_i = y_i - y_{i-1}" block />
+                  <p><strong>Fórmula:</strong></p>
+                  <MathRenderer math="P(x) = y_n + s\nabla y_n + \frac{s(s+1)}{2!}\nabla^2 y_n + \dots" block />
+                  <p style={{ fontSize: '0.85rem' }}>Donde <MathRenderer math="s = (x - x_n)/h" /></p>
+                </div>
               </div>
-            </section>
+
+              <section className={styles.section} style={{ marginTop: '1.5rem' }}>
+                <h3><Info size={18} /> ¿Cuál elegir?</h3>
+                <ul>
+                  <li><strong>Diferencias Divididas:</strong> Siempre que los puntos no sean equiespaciados.</li>
+                  <li><strong>Newton Adelante:</strong> Para interpolar al principio de un conjunto de datos.</li>
+                  <li><strong>Newton Atrás:</strong> Para interpolar al final o extrapolar valores futuros cercanos.</li>
+                </ul>
+              </section>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Módulo 4: Interpolación de Newton */}
+      {/* Módulo 4: Interpolación Lineal (Caso Particular) */}
       <div 
         className={`${styles.moduleWrapper} ${activeModules.includes(4) ? styles.active : ''}`}
         ref={moduleRefs[4]}
@@ -355,162 +356,12 @@ const InterpolationTheory: React.FC = () => {
         <button className={styles.moduleHeader} onClick={() => toggleModule(4)}>
           <div className={styles.moduleTitle}>
             <div className={styles.moduleNumber}>4</div>
-            <h2>Interpolación de Newton</h2>
-          </div>
-          <ChevronDown className={styles.icon} size={20} />
-        </button>
-
-        {activeModules.includes(4) && (
-          <div className={styles.moduleContent}>
-            <section className={styles.section}>
-              <h3><Target size={18} /> Objetivo del módulo</h3>
-              <p>Desarrollar la forma de interpolación de Newton basada en diferencias divididas y sus variantes para datos equiespaciados, comprendiendo sus ventajas computacionales.</p>
-            </section>
-
-            <section className={styles.section}>
-              <h3><PlusSquare size={18} /> Idea fundamental</h3>
-              <p>A partir de las diferencias divididas calculadas en el módulo anterior, construimos el polinomio de forma <strong>incremental</strong>.</p>
-              <ul>
-                <li>Permite agregar nuevos puntos sin reconstruir todo desde cero.</li>
-                <li>Es significativamente más eficiente que la forma de Lagrange para grandes conjuntos de datos.</li>
-              </ul>
-            </section>
-
-            <section className={styles.section}>
-              <h3>Fórmula General de Newton</h3>
-              <p>El polinomio se expresa como una suma acumulativa de términos de grado creciente:</p>
-              <MathRenderer 
-                math="P_n(x) = f[x_0] + f[x_0, x_1](x - x_0) + f[x_0, x_1, x_2](x - x_0)(x - x_1) + \cdots" 
-                block 
-              />
-              <p>Donde los coeficientes son exactamente los valores de la diagonal superior de nuestra tabla de diferencias divididas.</p>
-            </section>
-
-            <section className={styles.section}>
-              <h3><GitFork size={18} /> El Salto a los Casos Particulares</h3>
-              <p>
-                Aunque la forma anterior funciona para cualquier conjunto de puntos, en ingeniería es común trabajar con datos tomados a intervalos constantes (ej. cada segundo, cada metro). Aquí es donde el método de Newton se optimiza mediante las <strong>Diferencias Finitas</strong>.
-              </p>
-            </section>
-
-            <section className={styles.section}>
-              <h3>Diferencias Divididas vs. Diferencias Finitas</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                <div>
-                  <h4>1. Diferencias Divididas (General)</h4>
-                  <p>Se definen para puntos arbitrarios. Su base es la <strong>división</strong> por el espaciamiento de los nodos:</p>
-                  <MathRenderer math="f[x_0, x_1] = \frac{f(x_1) - f(x_0)}{x_1 - x_0}" block />
-                  <ul style={{ fontSize: '0.9rem' }}>
-                    <li>Ajustan automáticamente el espaciamiento.</li>
-                    <li>Base del Newton General.</li>
-                  </ul>
-                </div>
-                <div>
-                  <h4>2. Diferencias Finitas (Especial)</h4>
-                  <p>Se usan cuando el paso <MathRenderer math="h" /> es constante (<MathRenderer math="x_{i+1} - x_i = h" />). <strong>No dividen</strong> explícitamente:</p>
-                  <MathRenderer math="\Delta y_i = y_{i+1} - y_i" block />
-                  <ul style={{ fontSize: '0.9rem' }}>
-                    <li>Mucho más simples de calcular.</li>
-                    <li>Base de Newton Adelante/Atrás.</li>
-                  </ul>
-                </div>
-              </div>
-            </section>
-
-            <section className={styles.section}>
-              <h3>La Relación Matemática Clave</h3>
-              <p>Es un error común pensar que son nombres distintos para lo mismo. Las diferencias finitas son una <strong>versión simplificada</strong> de las divididas. Si los puntos son equiespaciados, la relación es:</p>
-              <MathRenderer math="f[x_0, x_1, \dots, x_k] = \frac{\Delta^k y_0}{k! h^k}" block />
-              <div className={styles.infoBox}>
-                <strong>¿Por qué aparecen factoriales y potencias?</strong>
-                Al no dividir en cada paso (como hacen las divididas), el "peso" del espaciamiento <MathRenderer math="h" /> y el crecimiento combinatorio de los términos se compensan al final con el <MathRenderer math="k!" /> y <MathRenderer math="h^k" /> en la fórmula del polinomio.
-              </div>
-            </section>
-
-            <section className={styles.section}>
-              <h3><Table size={18} /> Comparación de Métodos</h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table className={styles.comparisonTable} style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
-                      <th style={{ padding: '0.5rem' }}>Característica</th>
-                      <th style={{ padding: '0.5rem' }}>Diferencias Divididas</th>
-                      <th style={{ padding: '0.5rem' }}>Diferencias Finitas</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderBottom: '1px solid #edf2f7' }}>
-                      <td style={{ padding: '0.5rem' }}><strong>Tipo de Nodos</strong></td>
-                      <td style={{ padding: '0.5rem' }}>Cualquiera (Arbitrarios)</td>
-                      <td style={{ padding: '0.5rem' }}>Equiespaciados (<MathRenderer math="h" /> cte)</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #edf2f7' }}>
-                      <td style={{ padding: '0.5rem' }}><strong>Complejidad</strong></td>
-                      <td style={{ padding: '0.5rem' }}>Alta (Requiere divisiones)</td>
-                      <td style={{ padding: '0.5rem' }}>Baja (Solo restas)</td>
-                    </tr>
-                    <tr style={{ borderBottom: '1px solid #edf2f7' }}>
-                      <td style={{ padding: '0.5rem' }}><strong>Flexibilidad</strong></td>
-                      <td style={{ padding: '0.5rem' }}>Total</td>
-                      <td style={{ padding: '0.5rem' }}>Limitada al caso uniforme</td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: '0.5rem' }}><strong>Fórmula Newton</strong></td>
-                      <td style={{ padding: '0.5rem' }}>Forma General</td>
-                      <td style={{ padding: '0.5rem' }}>Adelante / Atrás / Central</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            <section className={styles.section}>
-              <h3>Casos de Newton para Diferencias Finitas</h3>
-              <p>Dependiendo de dónde se encuentre el valor que queremos interpolar (<MathRenderer math="x" />) respecto a nuestra tabla de datos, elegimos una variante:</p>
-              
-              <div className={styles.infoBox}>
-                <h4>1. Newton hacia Adelante (Forward)</h4>
-                <p>Ideal para valores cerca del inicio de la tabla. Usa diferencias <MathRenderer math="\Delta" /> de la parte superior.</p>
-                <MathRenderer math="P(x) = y_0 + s\Delta y_0 + \frac{s(s-1)}{2!}\Delta^2 y_0 + \dots" block />
-                <p style={{ fontSize: '0.85rem' }}>* Donde <MathRenderer math="s = (x - x_0)/h" /></p>
-              </div>
-
-              <div className={styles.infoBox} style={{ borderLeftColor: '#10b981' }}>
-                <h4>2. Newton hacia Atrás (Backward)</h4>
-                <p>Ideal para valores cerca del final de la tabla (extrapolación final). Usa diferencias <MathRenderer math="\nabla" /> de la parte inferior.</p>
-                <MathRenderer math="P(x) = y_n + s\nabla y_n + \frac{s(s+1)}{2!}\nabla^2 y_n + \dots" block />
-                <p style={{ fontSize: '0.85rem' }}>* Donde <MathRenderer math="s = (x - x_n)/h" /></p>
-              </div>
-            </section>
-
-            <section className={styles.section}>
-              <h3><Info size={18} /> Resumen de Intuición</h3>
-              <ul>
-                <li><strong>Usa Diferencias Divididas cuando:</strong> Los puntos están "desordenados" o no tienen un patrón de distancia fijo.</li>
-                <li><strong>Usa Diferencias Finitas cuando:</strong> Los datos provienen de una tabla uniforme o un muestreo periódico.</li>
-              </ul>
-              <div className={styles.warningBox}>
-                <AlertCircle size={16} /> <strong>Recuerda:</strong> Una técnica es el motor general y la otra es una optimización matemática para cuando la geometría de los datos lo permite.
-              </div>
-            </section>
-          </div>
-        )}
-      </div>
-
-      {/* Módulo 5: Interpolación Lineal (Caso Particular) */}
-      <div 
-        className={`${styles.moduleWrapper} ${activeModules.includes(5) ? styles.active : ''}`}
-        ref={moduleRefs[5]}
-      >
-        <button className={styles.moduleHeader} onClick={() => toggleModule(5)}>
-          <div className={styles.moduleTitle}>
-            <div className={styles.moduleNumber}>5</div>
             <h2>Interpolación Lineal</h2>
           </div>
           <ChevronDown className={styles.icon} size={20} />
         </button>
 
-        {activeModules.includes(5) && (
+        {activeModules.includes(4) && (
           <div className={styles.moduleContent}>
             <section className={styles.section}>
               <p>

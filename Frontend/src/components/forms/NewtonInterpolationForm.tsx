@@ -10,7 +10,7 @@ interface Props {
   initialValues?: DividedDifferencesRequest;
 }
 
-export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, initialValues }) => {
+export const NewtonInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading, initialValues }) => {
   // Permitimos que x e y sean string para poder borrarlos en el input
   const [puntos, setPuntos] = useState<(any)[]>(initialValues?.puntos || [
     { x: 1, y: 1 },
@@ -137,11 +137,11 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
           </div>
         </section>
 
-        {/* Toggle para el método */}
+        {/* Selector de Tipo de Diferencia */}
         <div className={styles.toggleContainer}>
           <div className={styles.toggleLabel}>
-            <span>Diferencias Finitas</span>
-            <span>Usar paso h constante</span>
+            <span style={{ fontWeight: 700 }}>Diferencias Finitas</span>
+            <span>(Datos equiespaciados)</span>
           </div>
           <label className={styles.switch}>
             <input 
@@ -152,6 +152,16 @@ export const DividedDifferencesForm: React.FC<Props> = ({ onSubmit, isLoading, i
             <span className={styles.slider}></span>
           </label>
         </div>
+
+        {!metodo || metodo === 'divididas' ? (
+          <div style={{ padding: '0.75rem', backgroundColor: '#f8fafc', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#64748b', border: '1px solid #e2e8f0' }}>
+            <strong>Sección 1:</strong> Usando Diferencias Divididas para puntos con cualquier espaciamiento.
+          </div>
+        ) : (
+          <div style={{ padding: '0.75rem', backgroundColor: '#f0fdf4', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.85rem', color: '#166534', border: '1px solid #bbf7d0' }}>
+            <strong>Sección 2:</strong> Usando Diferencias Finitas optimizadas para paso h constante.
+          </div>
+        )}
 
         {/* Configuración adicional para Finitas */}
         {metodo === 'finitas' && (
