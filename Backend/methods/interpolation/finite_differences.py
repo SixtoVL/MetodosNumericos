@@ -29,19 +29,30 @@ def finite_differences_method(puntos, direccion="adelante", x_a_evaluar=None, pi
         "formula": f"h = x_1 - x_0 = {x_vals[1]:.4g} - {x_vals[0]:.4g} = {h:.4g}"
     })
 
-    # --- PASO 2: CÁLCULO DE S (Si se evalúa un punto) ---
+    # --- PASO 2: CÁLCULO DE S ---
     s = None
+    x_ref = x_vals[pivote]
+    simbolo_ref = f"x_{{{pivote}}}"
+    
     if x_a_evaluar is not None:
-        x_ref = x_vals[pivote]
-        simbolo_ref = f"x_{{{pivote}}}"
         s = (x_a_evaluar - x_ref) / h
         formula_s = f"s = \\frac{{x - {simbolo_ref}}}{{h}} = \\frac{{{x_a_evaluar:.4g} - {x_ref:.4g}}}{{{h:.4g}}} = {s:.4g}"
-            
-        pasos.append({
-            "orden": 0,
-            "descripcion": f"Cálculo del factor de interpolación (s) usando pivote en {simbolo_ref} para x = {x_a_evaluar:.4g}",
-            "formula": formula_s
-        })
+        descripcion_s = (
+            f"Cálculo de 's' (posición relativa): Indica que el valor x = {x_a_evaluar:.4g} "
+            f"se encuentra a {s:.4g} intervalos de distancia (pasos de tamaño h) desde el pivote {simbolo_ref}."
+        )
+    else:
+        formula_s = f"s = \\frac{{x - {simbolo_ref}}}{{h}} = \\frac{{x - {x_ref:.4g}}}{{{h:.4g}}}"
+        descripcion_s = (
+            f"Definición de 's': Parámetro adimensional que indica la posición relativa de x "
+            f"respecto al punto de referencia {simbolo_ref}, medida en unidades del espaciamiento h."
+        )
+
+    pasos.append({
+        "orden": 0,
+        "descripcion": descripcion_s,
+        "formula": formula_s
+    })
 
     # --- PASO 3: TABLA DE DIFERENCIAS ---
     for j in range(1, n):
