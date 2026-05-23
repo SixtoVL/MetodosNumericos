@@ -60,72 +60,91 @@ def finite_differences_method(puntos, direccion="adelante", x_a_evaluar=None, pi
             resultado = tabla[i+1, j-1] - tabla[i, j-1]
             tabla[i, j] = resultado
             
-            # En diferencias finitas, mostramos el cálculo de la diferencia
-            # Independientemente de la dirección, la tabla es la misma
-            formula = f"\\Delta^{{{j}}} y_{{{i}}} = {tabla[i+1, j-1]:.4g} - ({tabla[i, j-1]:.4g}) = {resultado:.4g}"
+            # Formatear el paso según la dirección
+            if direccion == "adelante":
+                simbolo = f"\\Delta^{{{j}}} y_{{{i}}}"
+                desc = f"Cálculo de diferencia hacia adelante de orden {j}"
+            else:
+                # Para atrás, la Delta i es equivalente a la Nabla i+j
+                simbolo = f"\\nabla^{{{j}}} y_{{{i+j}}}"
+                desc = f"Cálculo de diferencia hacia atrás de orden {j}"
+            
+            formula = f"{simbolo} = {tabla[i+1, j-1]:.4g} - ({tabla[i, j-1]:.4g}) = {resultado:.4g}"
             
             pasos.append({
                 "orden": j,
-                "descripcion": f"Cálculo de diferencia de orden {j}",
+                "descripcion": desc,
                 "formula": formula
             })
             
     # Selección de coeficientes y construcción del polinomio
-    coefs_divididas = []
+    coefs_simplificados = [] # Estos son Dy/k! o Ny/k!
     
-    # El pivote determina qué "camino" tomamos en la tabla
     if direccion == "adelante":
-        # Newton Adelante desde el pivote: usa tabla[pivote, k]
-        # P(x) = y_p + s*Dy_p + s(s-1)/2! * D^2y_p + ...
-        # Los nodos de Newton son x_p, x_p+1, x_p+2...
         max_k = n - pivote
         x_newton = x_vals[pivote:].tolist()
         
+        # Explicar la selección de la diagonal
+        pasos.append({
+            "orden": n + 1,
+            "descripcion": "Selección de coeficientes (Diagonal Descendente)",
+            "formula": f"\\text{{Coeficientes: }} \\Delta^k y_{{{pivote}}} \\text{{ partiendo de }} y_{{{pivote}}}"
+        })
+
         for k in range(max_k):
             diff_finita = tabla[pivote, k]
             factorial_k = math.factorial(k)
-            denominador = factorial_k * (h ** k)
-            coefs_divididas.append(diff_finita / denominador)
+            coefs_simplificados.append(diff_finita / factorial_k)
             
-        terminos_latex = [f"{coefs_divididas[0]:.4g}"]
-        for i in range(1, len(coefs_divididas)):
-            coef = coefs_divididas[i]
+        terminos_latex = [f"{coefs_simplificados[0]:.4g}"]
+        for i in range(1, len(coefs_simplificados)):
+            coef = coefs_simplificados[i]
             if abs(coef) < 1e-10: continue
             signo = "+" if coef >= 0 else "-"
             valor = abs(coef)
-            factors_list = [f"(x {'-' if x_newton[k]>=0 else '+'} {abs(x_newton[k]):.4g})" for k in range(i)]
-            factor_latex = "".join(factors_list)
-            terminos_latex.append(f"{signo} {valor:.4g}{factor_latex}")
+            factor_s = "s"
+            for k in range(1, i):
+                factor_s += f"(s - {k})"
+            terminos_latex.append(f"{signo} {valor:.4g}{factor_s}")
             
     else:
         # Newton Atrás desde el pivote: usa tabla[pivote-k, k]
-        # P(x) = y_p + s*Ny_p + s(s+1)/2! * N^2y_p + ...
-        # Los nodos de Newton son x_p, x_p-1, x_p-2...
         max_k = pivote + 1
         x_newton = x_vals[:pivote+1][::-1].tolist()
+
+        # Explicar la selección de la diagonal
+        pasos.append({
+            "orden": n + 1,
+            "descripcion": "Selección de coeficientes (Diagonal Ascendente)",
+            "formula": f"\\text{{Coeficientes: }} \\nabla^k y_{{{pivote}}} \\text{{ terminando en }} y_{{{pivote}}}"
+        })
         
         for k in range(max_k):
+            # En nuestra tabla de diferencias finitas, la nabla^k y_p es tabla[p-k, k]
             diff_finita = tabla[pivote - k, k] 
             factorial_k = math.factorial(k)
-            denominador = factorial_k * (h ** k)
-            coefs_divididas.append(diff_finita / denominador)
+            coefs_simplificados.append(diff_finita / factorial_k)
             
-        terminos_latex = [f"{coefs_divididas[0]:.4g}"]
-        for i in range(1, len(coefs_divididas)):
-            coef = coefs_divididas[i]
+        terminos_latex = [f"{coefs_simplificados[0]:.4g}"]
+        for i in range(1, len(coefs_simplificados)):
+            coef = coefs_simplificados[i]
             if abs(coef) < 1e-10: continue
             signo = "+" if coef >= 0 else "-"
             valor = abs(coef)
-            factors_list = [f"(x {'-' if x_newton[k]>=0 else '+'} {abs(x_newton[k]):.4g})" for k in range(i)]
-            factor_latex = "".join(factors_list)
-            terminos_latex.append(f"{signo} {valor:.4g}{factor_latex}")
+            factor_s = "s"
+            for k in range(1, i):
+                factor_s += f"(s + {k})"
+            terminos_latex.append(f"{signo} {valor:.4g}{factor_s}")
 
     polinomio_latex = " ".join(terminos_latex)
     
-    # --- CALCULO DEL POLINOMIO REDUCIDO CON HELPER ---
-    polinomio_reducido_latex = calculate_reduced_polynomial(coefs_divididas, x_newton)
+    # Coeficientes equivalentes para el polinomio reducido
+    # f[x0...xk] = D^k y0 / (k! * h^k) para adelante
+    # f[xn...xn-k] = N^k yn / (k! * h^k) para atrás
+    coefs_newton_equivalentes = [coefs_simplificados[k] / (h**k) for k in range(len(coefs_simplificados))]
+    polinomio_reducido_latex = calculate_reduced_polynomial(coefs_newton_equivalentes, x_newton)
     
-    # Formatear la tabla para la respuesta (triangular superior)
+    # Formatear la tabla para la respuesta
     tabla_completa = []
     for i in range(n):
         fila = [float(x_vals[i])] + [float(v) for v in tabla[i, : (n - i)]]
@@ -134,10 +153,10 @@ def finite_differences_method(puntos, direccion="adelante", x_a_evaluar=None, pi
         tabla_completa.append(fila)
         
     return {
-        "coeficientes": coefs_divididas,
+        "coeficientes": coefs_newton_equivalentes,
         "tabla": tabla_completa,
         "pasos": pasos,
-        "polinomio_latex": f"P(x) = {polinomio_latex}",
+        "polinomio_latex": f"P(s) = {polinomio_latex}",
         "polinomio_reducido_latex": f"P(x) = {polinomio_reducido_latex}",
         "puntos_x": x_vals.tolist(),
         "puntos_y": y_vals.tolist(),

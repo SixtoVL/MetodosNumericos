@@ -22,6 +22,17 @@ export const NewtonInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading, 
   const [direccion, setDireccion] = useState<'adelante' | 'atras'>(initialValues?.direccion || 'adelante');
   const [pivote, setPivote] = useState<number>(initialValues?.pivote || 0);
 
+  // Al cambiar la dirección, sugerir un pivote adecuado
+  useEffect(() => {
+    if (metodo === 'finitas') {
+      if (direccion === 'atras' && pivote === 0) {
+        setPivote(puntos.length - 1);
+      } else if (direccion === 'adelante' && pivote === puntos.length - 1) {
+        setPivote(0);
+      }
+    }
+  }, [direccion, puntos.length, metodo]);
+
   useEffect(() => {
     if (initialValues) {
       setPuntos(initialValues.puntos);
