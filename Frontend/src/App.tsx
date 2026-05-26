@@ -9,6 +9,7 @@ import { FixedPointPage } from './pages/FixedPointPage';
 import { FixedPointTheory } from './pages/methods/fixed_point/FixedPointTheory';
 import InterpolationTheory from './pages/methods/interpolation/InterpolationTheory';
 import { NewtonInterpolationPage } from './pages/methods/interpolation/NewtonInterpolationPage';
+import { HermiteInterpolationPage } from './pages/methods/interpolation/HermiteInterpolationPage';
 import { Menu } from 'lucide-react';
 import './App.css';
 
@@ -55,6 +56,7 @@ function App() {
               <Route path="/metodos/punto-fijo/calculadora" element={<FixedPointPage />} />
               <Route path="/metodos/interpolacion/teoria" element={<InterpolationTheory />} />
               <Route path="/metodos/interpolacion/newton" element={<NewtonInterpolationPage />} />
+              <Route path="/metodos/interpolacion/hermite" element={<HermiteInterpolationPage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>
           </main>

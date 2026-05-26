@@ -10,7 +10,7 @@ interface Example {
 }
 
 interface Props {
-  method: 'newton' | 'fixed-point' | 'interpolation';
+  method: 'newton' | 'fixed-point' | 'interpolation' | 'hermite';
   onSelect: (values: any) => void;
 }
 
@@ -104,6 +104,38 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
             punto_inicial: [0.5, 0.5, 0.5],
             tolerancia: 0.0001,
             iteraciones: 20
+          }
+        }
+      ];
+    }
+
+    if (method === 'hermite') {
+      return [
+        {
+          title: "Ejemplo de Examen",
+          description: "Hallar el polinomio osculador de grado 3 para 2 puntos con derivadas.",
+          difficulty: "Fácil",
+          values: {
+            puntos: [{ x: 1, y: 2, dy: 3 }, { x: 2, y: 5, dy: 4 }],
+            x_a_evaluar: 1.5
+          }
+        },
+        {
+          title: "Trayectoria de un Auto",
+          description: "Simula la posición y velocidad en t=0 y t=5 para estimar t=2.5.",
+          difficulty: "Medio",
+          values: {
+            puntos: [{ x: 0, y: 0, dy: 10 }, { x: 5, y: 100, dy: 20 }],
+            x_a_evaluar: 2.5
+          }
+        },
+        {
+          title: "Curva S (Sigmoide)",
+          description: "3 puntos con derivadas cero en los extremos para una curva suave.",
+          difficulty: "Avanzado",
+          values: {
+            puntos: [{ x: 0, y: 0, dy: 0 }, { x: 0.5, y: 0.5, dy: 2 }, { x: 1, y: 1, dy: 0 }],
+            x_a_evaluar: 0.25
           }
         }
       ];
@@ -212,7 +244,7 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
                     <div className={styles.cardFooter}>
                       <Activity size={14} />
                       <span>
-                        {method === 'interpolation' 
+                        {method === 'interpolation' || method === 'hermite'
                           ? `${ex.values.puntos.length} Puntos` 
                           : `${Array.isArray(ex.values.funciones || ex.values.g_func) ? ex.values.funciones?.length || ex.values.g_func?.length : 1} Variables`
                         }
@@ -229,3 +261,5 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
     </div>
   );
 };
+
+export default ExamplesGuide;

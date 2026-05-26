@@ -1,12 +1,44 @@
 from fastapi import HTTPException
 from methods.interpolation.divided_differences import divided_differences_method
 from methods.interpolation.finite_differences import finite_differences_method
-from schemas.interpolation_schema import InterpolationSchema
+from methods.interpolation.hermite import hermite_method
+from schemas.interpolation_schema import InterpolationSchema, HermiteRequest
 import logging
 import numpy as np
 import json
 
 logger = logging.getLogger("InterpolationController")
+
+def solve_hermite(data: HermiteRequest):
+    input_json = json.dumps(data.model_dump(), indent=2, ensure_ascii=False)
+    logger.info(f"--- NUEVA PETICIÓN (Hermite) ---\n{input_json}")
+
+    try:
+        if len(data.puntos) < 2:
+            raise HTTPException(status_code=400, detail="Se necesitan al menos 2 puntos para interpolar.")
+
+        resultado = hermite_method(data.puntos)
+
+        # Evaluación del punto si se solicita
+        if data.x_a_evaluar is not None:
+            xa = data.x_a_evaluar
+            coefs = resultado["coeficientes"]
+            nodos_z = resultado["nodos_z"]
+            
+            valor_evaluado = coefs[0]
+            producto = 1.0
+            for i in range(1, len(coefs)):
+                producto *= (xa - nodos_z[i-1])
+                valor_evaluado += coefs[i] * producto
+            
+            resultado["valor_evaluado"] = {"x": xa, "y": valor_evaluado}
+
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en solve_hermite: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 def solve_divided_differences(data: InterpolationSchema):
     metodo_solicitado = data.metodo

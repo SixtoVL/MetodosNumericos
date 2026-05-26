@@ -693,7 +693,7 @@ const InterpolationTheory: React.FC = () => {
             </section>
 
             <section className={styles.section}>
-              <h3><Target size={18} /> ¿Cuándo se utiliza?</h3>
+              <h3>¿Cuándo se utiliza?</h3>
               <p>Es el estándar en ingeniería cuando necesitamos trayectorias suaves:</p>
               <ul>
                 <li><strong>Física:</strong> Cuando conoces la posición y la velocidad de un objeto.</li>
@@ -722,15 +722,28 @@ const InterpolationTheory: React.FC = () => {
               <h3><Table size={18} /> Estructura de la Tabla de Hermite</h3>
               <div className={styles.infoBox} style={{ overflowX: 'auto' }}>
                 <MathRenderer math="
-                \begin{array}{c|c|c|c}
-                z_i & f[z_i] & \text{Orden 1} & \text{Orden 2} \\
+                \begin{array}{c|c|c|c|c}
+                z_i & f[z_i] & \text{Orden 1} & \text{Orden 2} & \text{Orden 3} \\
                 \hline
-                x_0 & y_0 & & \\
-                x_0 & y_0 & \mathbf{f'(x_0)} & \\
-                x_1 & y_1 & f[x_0, x_1] & \mathbf{f[x_0, x_0, x_1]} \\
-                x_1 & y_1 & f'(x_1) & f[x_0, x_1, x_1] \\
+                x_0 & y_0 & & & \\
+                x_0 & y_0 & \mathbf{f'(x_0)} & & \\
+                x_1 & y_1 & f[z_1, z_2] & \mathbf{f[z_0, z_1, z_2]} & \\
+                x_1 & y_1 & f'(x_1) & f[z_1, z_2, z_3] & \mathbf{f[z_0, z_1, z_2, z_3]} \\
                 \end{array}" block />
               </div>
+            </section>
+
+            <section className={styles.section}>
+              <h3>Construcción del Polinomio</h3>
+              <p>El polinomio de Hermite se construye usando la <strong>Forma de Newton</strong> aplicada a los nodos duplicados <MathRenderer math="z_i" /> y los coeficientes de la diagonal superior de la tabla:</p>
+              <div className={styles.infoBox}>
+                <MathRenderer math="P(x) = a_0 + a_1(x-z_0) + a_2(x-z_0)(x-z_1) + a_3(x-z_0)(x-z_1)(x-z_2) + \dots" block />
+              </div>
+              <p>Como <MathRenderer math="z_0 = z_1 = x_0" />, los términos se simplifican a formas cuadráticas:</p>
+              <ul>
+                <li><MathRenderer math="a_0 + a_1(x-x_0) + a_2(x-x_0)^2 + a_3(x-x_0)^2(x-x_1) + \dots" /></li>
+              </ul>
+              <p>Estos términos <MathRenderer math="(x-x_i)^2" /> son los que permiten que el polinomio tenga la libertad de ajustar su pendiente (derivada) en cada punto sin perder el valor de la función.</p>
             </section>
 
             <hr className={styles.divider} />

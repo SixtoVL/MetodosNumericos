@@ -3,12 +3,23 @@ export interface Point {
   y: number;
 }
 
+export interface HermitePoint {
+  x: number;
+  y: number;
+  dy: number;
+}
+
 export interface DividedDifferencesRequest {
   puntos: Point[];
-  x_a_evaluar?: number | null;
+  x_a_evaluar?: number;
   metodo?: 'divididas' | 'finitas';
   direccion?: 'adelante' | 'atras';
   pivote?: number;
+}
+
+export interface HermiteRequest {
+  puntos: HermitePoint[];
+  x_a_evaluar?: number;
 }
 
 export interface DividedDifferencesResponse {
