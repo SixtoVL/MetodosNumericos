@@ -718,8 +718,52 @@ const InterpolationTheory: React.FC = () => {
               </div>
             </section>
 
+            <section className={styles.section} style={{ border: '2px solid #3b82f6', borderRadius: '12px', padding: '1.5rem', backgroundColor: '#f0f9ff' }}>
+              <p>
+                En interpolación de Hermite <strong>no siempre se necesitan exactamente tres valores por punto</strong>. 
+                La cantidad de información que tengas en cada punto determina cuántas veces se repite el nodo en la tabla:
+              </p>
+              
+              <div className={styles.infoBox} style={{ overflowX: 'auto', backgroundColor: 'white' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f1f5f9', textAlign: 'left' }}>
+                      <th style={{ padding: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Información conocida</th>
+                      <th style={{ padding: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Datos</th>
+                      <th style={{ padding: '0.75rem', borderBottom: '2px solid #e2e8f0' }}>Repeticiones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>Solo valor de la función</td>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}><MathRenderer math="(x_i, f(x_i))" /></td>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9', fontWeight: 'bold' }}>1</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>Valor y primera derivada</td>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}><MathRenderer math="(x_i, f(x_i), f'(x_i))" /></td>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9', fontWeight: 'bold' }}>2</td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}>Valor, primera y segunda derivada</td>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9' }}><MathRenderer math="(x_i, f(x_i), f'(x_i), f''(x_i))" /></td>
+                      <td style={{ padding: '0.75rem', borderBottom: '1px solid #f1f5f9', fontWeight: 'bold' }}>3</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h4 style={{ color: '#1e40af', marginTop: '1rem' }}>Caso más común en los cursos</h4>
+              <p>Normalmente te dan el valor y la primera derivada, por eso los nodos suelen duplicarse: <MathRenderer math="[x_0, x_0, x_1, x_1]" /></p>
+
+              <div className={styles.warningBox} style={{ backgroundColor: '#dbeafe', borderLeftColor: '#3b82f6' }}>
+                <strong>Idea clave para examen:</strong> Hermite usa información adicional de derivadas para construir una aproximación más precisa que Newton o Lagrange. Lo importante es que además de <MathRenderer math="f(x)" /> conozcas una o más derivadas en algunos puntos.
+              </div>
+            </section>
+
             <section className={styles.section}>
-              <h3><Table size={18} /> Estructura de la Tabla de Hermite</h3>
+              <h3><Table size={18} /> Estructura de la Tabla (Caso General)</h3>
+              <p>Cuando un nodo se repite para incluir derivadas de orden superior, la tabla se expande verticalmente. Por ejemplo, para un punto con hasta segunda derivada ($f, f', f''$):</p>
               <div className={styles.infoBox} style={{ overflowX: 'auto' }}>
                 <MathRenderer math="
                 \begin{array}{c|c|c|c|c}
@@ -727,9 +771,17 @@ const InterpolationTheory: React.FC = () => {
                 \hline
                 x_0 & y_0 & & & \\
                 x_0 & y_0 & \mathbf{f'(x_0)} & & \\
-                x_1 & y_1 & f[z_1, z_2] & \mathbf{f[z_0, z_1, z_2]} & \\
-                x_1 & y_1 & f'(x_1) & f[z_1, z_2, z_3] & \mathbf{f[z_0, z_1, z_2, z_3]} \\
+                x_0 & y_0 & f'(x_0) & \mathbf{\frac{f''(x_0)}{2!}} & \\
+                x_1 & y_1 & f[z_2, z_3] & f[z_1, z_2, z_3] & \mathbf{f[z_0, z_1, z_2, z_3]} \\
                 \end{array}" block />
+              </div>
+              <div className={styles.infoBox} style={{ marginTop: '1rem', backgroundColor: '#f8fafc' }}>
+                <p><strong>La Regla General ($k$ repeticiones):</strong></p>
+                <p>Si tienes hasta la derivada de orden <MathRenderer math="k" />, el nodo <MathRenderer math="x_i" /> debe aparecer <MathRenderer math="k+1" /> veces. La diferencia dividida de orden <MathRenderer math="j" /> (donde todos los nodos involucrados son <MathRenderer math="x_i" />) es:</p>
+                <MathRenderer math="f[z_i, z_{i+1}, \dots, z_{i+j}] = \frac{f^{(j)}(x_i)}{j!}" block />
+                <p style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                  Ejemplo: Para la tercera derivada ($f'''$), usarías <MathRenderer math="\frac{f'''(x_i)}{3!} = \frac{f'''(x_i)}{6}" />.
+                </p>
               </div>
             </section>
 

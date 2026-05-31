@@ -35,23 +35,49 @@ export const HermiteQuickGuide: React.FC = () => {
               <section className={styles.section}>
                 <h3><Hash size={18} /> ¿Cómo ingresar los datos?</h3>
                 <p>
-                  A diferencia de la interpolación normal, aquí necesitas tres valores por cada punto:
+                  En Hermite, la cantidad de información que tengas en cada punto determina cuántas veces se repite el nodo en la tabla:
                 </p>
-                <ul className={styles.list}>
-                  <li><strong>x</strong>: La posición en el eje horizontal.</li>
-                  <li><strong>f(x)</strong>: El valor de la función en ese punto.</li>
-                  <li><strong>f'(x)</strong>: La pendiente (derivada) en ese punto.</li>
-                </ul>
+                
+                <div style={{ overflowX: 'auto', margin: '1rem 0' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f1f5f9', textAlign: 'left' }}>
+                        <th style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>Información</th>
+                        <th style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>Datos</th>
+                        <th style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>Repeticiones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>Solo valor</td>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>(x, f(x))</td>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>1</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>Valor y 1ra der.</td>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>(x, f(x), f'(x))</td>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>2</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>Valor, 1ra y 2da der.</td>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>(x, f(x), f'(x), f''(x))</td>
+                        <td style={{ padding: '0.5rem', border: '1px solid #e2e8f0' }}>3</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </section>
 
               <section className={styles.section}>
                 <h3><Star size={18} /> La "Magia" de Hermite</h3>
-                <p>El método utiliza <strong>nodos duplicados</strong> para integrar las derivadas en una tabla de diferencias:</p>
+                <p>El método utiliza <strong>nodos expandidos</strong> (duplicados o triplicados) para integrar las derivadas:</p>
                 <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', margin: '0.5rem 0' }}>
-                  <MathRenderer math="f[x_i, x_i] = f'(x_i)" block />
-                  <p style={{ fontSize: '0.85rem', color: '#64748b', textAlign: 'center', marginTop: '0.5rem' }}>
-                    Si los nodos se repiten, la tabla usa automáticamente la derivada.
-                  </p>
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <MathRenderer math="f[x_i, x_i] = f'(x_i)" block />
+                  </div>
+                  <div>
+                    <MathRenderer math="f[x_i, x_i, x_i] = \frac{f''(x_i)}{2!}" block />
+                  </div>
                 </div>
               </section>
 

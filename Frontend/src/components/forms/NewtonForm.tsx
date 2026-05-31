@@ -41,17 +41,6 @@ export const NewtonForm: React.FC<NewtonFormProps> = ({ onSolve, isPending, init
     e.preventDefault();
     if (!isSquareSystem) return;
 
-    // Validación: No permitir campos vacíos en el envío
-    const hasEmptyField = puntoInicial.some(val => val === '') || 
-                         tolerancia === '' || 
-                         iteraciones === '' || 
-                         funciones.some(f => f.trim() === '');
-
-    if (hasEmptyField) {
-      alert("Por favor, completa todos los campos antes de calcular.");
-      return;
-    }
-    
     onSolve({
       funciones,
       punto_inicial: puntoInicial.map(val => typeof val === 'string' ? parseFloat(val) : val),

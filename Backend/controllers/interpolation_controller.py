@@ -9,29 +9,95 @@ import json
 
 logger = logging.getLogger("InterpolationController")
 
+import sympy as sp
+from methods.newton.helpers.parser_matematico import parsear_funcion
+from schemas.interpolation_schema import InterpolationSchema, HermiteRequest, HermitePoint
+
 def solve_hermite(data: HermiteRequest):
     input_json = json.dumps(data.model_dump(), indent=2, ensure_ascii=False)
     logger.info(f"--- NUEVA PETICIÓN (Hermite) ---\n{input_json}")
 
     try:
-        if len(data.puntos) < 2:
-            raise HTTPException(status_code=400, detail="Se necesitan al menos 2 puntos para interpolar.")
+        puntos_hermite = []
+        
+        # 1. Modo Simbólico: si viene funcion y x_puntos
+        if data.funcion and data.x_puntos:
+            logger.info(f"Modo simbólico detectado: f(x) = {data.funcion}")
+            expr, vars_sym = parsear_funcion(data.funcion, ["x"])
+            x_sym = vars_sym[0]
+            
+            # Si no vienen órdenes, asumimos solo f'(x)
+            ordenes = data.ordenes if data.ordenes else [1] * len(data.x_puntos)
+            
+            for i, xi in enumerate(data.x_puntos):
+                yi = float(expr.subs(x_sym, xi))
+                derivadas = []
+                # Calcular derivadas según el orden solicitado para este punto
+                for orden_der in range(1, ordenes[i] + 1):
+                    val_der = float(sp.diff(expr, x_sym, orden_der).subs(x_sym, xi))
+                    derivadas.append(val_der)
+                
+                puntos_hermite.append(HermitePoint(x=xi, y=yi, derivadas=derivadas))
+        else:
+            # Modo Manual
+            if not data.puntos or len(data.puntos) < 1:
+                raise HTTPException(status_code=400, detail="Se necesitan puntos para interpolar.")
+            puntos_hermite = data.puntos
 
-        resultado = hermite_method(data.puntos)
+        if len(puntos_hermite) == 0:
+             raise HTTPException(status_code=400, detail="No se proporcionaron puntos válidos.")
 
-        # Evaluación del punto si se solicita
+        # 2. Ejecutar el método
+        resultado = hermite_method(puntos_hermite)
+
+        # 3. Evaluación del punto si se solicita
+        def evaluar_newton(x, coefs, nodos_z):
+            val = coefs[0]
+            prod = 1.0
+            for i in range(1, len(coefs)):
+                prod *= (x - nodos_z[i-1])
+                val += coefs[i] * prod
+            return val
+
         if data.x_a_evaluar is not None:
             xa = data.x_a_evaluar
-            coefs = resultado["coeficientes"]
-            nodos_z = resultado["nodos_z"]
-            
-            valor_evaluado = coefs[0]
-            producto = 1.0
-            for i in range(1, len(coefs)):
-                producto *= (xa - nodos_z[i-1])
-                valor_evaluado += coefs[i] * producto
-            
-            resultado["valor_evaluado"] = {"x": xa, "y": valor_evaluado}
+            val_ev = evaluar_newton(xa, resultado["coeficientes"], resultado["nodos_z"])
+            resultado["valor_evaluado"] = {"x": xa, "y": val_ev}
+
+        # 4. Generación de puntos para la curva (Graficación Robusta)
+        x_min = min(resultado["nodos_z"])
+        x_max = max(resultado["nodos_z"])
+        rango = x_max - x_min
+        padding = rango * 0.2 if rango > 0 else 1.0
+        
+        x_plot = np.linspace(x_min - padding, x_max + padding, 200)
+        curva = []
+        for x_val in x_plot:
+            y_val = evaluar_newton(x_val, resultado["coeficientes"], resultado["nodos_z"])
+            # Evitar infinitos en el JSON
+            if abs(y_val) < 1e100:
+                curva.append({"x": float(x_val), "y": float(y_val)})
+        
+        resultado["curva"] = curva
+
+        # 5. Generación de tangentes para visualización
+        tangentes = []
+        longitud_tangente = padding * 0.5 if padding > 0 else 0.5
+        for p in puntos_hermite:
+            if p.derivadas and len(p.derivadas) > 0:
+                m = p.derivadas[0] # Primera derivada
+                # f(x) + m * (t - x)
+                t_start = p.x - longitud_tangente
+                t_end = p.x + longitud_tangente
+                y_start = p.y + m * (t_start - p.x)
+                y_end = p.y + m * (t_end - p.x)
+                tangentes.append({
+                    "x0": t_start, "y0": y_start,
+                    "x1": t_end, "y1": y_end,
+                    "label": f"f'({p.x})={m:.2g}"
+                })
+        
+        resultado["tangentes"] = tangentes
 
         return resultado
     except HTTPException:

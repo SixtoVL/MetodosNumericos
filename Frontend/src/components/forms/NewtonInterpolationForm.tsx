@@ -67,13 +67,6 @@ export const NewtonInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading, 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validación: No permitir campos vacíos en los puntos
-    const hasEmptyFields = puntos.some(p => p.x === '' || p.y === '');
-    if (hasEmptyFields) {
-      alert("Por favor, completa todos los campos de los puntos.");
-      return;
-    }
 
     if (puntos.length < 2) return;
 

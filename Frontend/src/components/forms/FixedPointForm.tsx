@@ -82,16 +82,6 @@ export const FixedPointForm: React.FC<FixedPointFormProps> = ({ onSolve, isPendi
     e.preventDefault();
     if (!isSquareSystem || !areFuncsFilled) return;
 
-    // Validación: No permitir campos vacíos en el envío
-    const hasEmptyField = puntoInicial.some(val => val === '') || 
-                         tolerancia === '' || 
-                         iteraciones === '';
-
-    if (hasEmptyField) {
-      alert("Por favor, completa todos los campos antes de calcular.");
-      return;
-    }
-    
     onSolve({
       g_func: gFuncs.length === 1 ? gFuncs[0] : gFuncs,
       punto_inicial: puntoInicial.length === 1 ? (typeof puntoInicial[0] === 'string' ? parseFloat(puntoInicial[0] as string) : puntoInicial[0] as number) : puntoInicial.map(val => typeof val === 'string' ? parseFloat(val) : val as number),

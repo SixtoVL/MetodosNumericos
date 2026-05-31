@@ -25,15 +25,18 @@ export const HermiteInterpolationPage: React.FC = () => {
   };
 
   const initialValues = formValues || {
-    puntos: [{ x: 1, y: 2, dy: 3 }, { x: 2, y: 5, dy: 4 }],
-    x_a_evaluar: 1.5
+    puntos: [
+      { x: 0.8, y: 0.22363362, derivadas: [2.1691753] },
+      { x: 1.0, y: 0.65809197, derivadas: [2.0466965] }
+    ],
+    x_a_evaluar: 0.9
   };
 
   return (
     <div className={styles.pageContainer}>
       <header className={styles.header}>
         <h1>Interpolación de Hermite</h1>
-        <p>Construye el polinomio interpolante que respeta tanto los puntos como sus derivadas.</p>
+        <p>Construye el polinomio interpolante que respeta tanto los puntos como sus derivadas de cualquier orden.</p>
       </header>
 
       <div className={styles.dashboardGrid}>
@@ -70,11 +73,25 @@ export const HermiteInterpolationPage: React.FC = () => {
 
           {data ? (
             <>
+              {/* 4. Gráfica (Subida de prioridad para mejor visualización) */}
+              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
+                  Representación Gráfica Robusta
+                </h3>
+                <InterpolationChart 
+                  puntosX={data.puntos_x}
+                  puntosY={data.puntos_y}
+                  polinomioLatex={data.polinomio_reducido_latex.replace('P(x) = ', '')}
+                  curva={data.curva}
+                  tangentes={data.tangentes}
+                />
+              </div>
+
               {/* 1. Tabla de Diferencias Divididas (Hermite) */}
               <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                   <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', margin: 0 }}>
-                    Tabla de Hermite (Nodos Duplicados)
+                    Tabla de Hermite (Nodos Expandidos)
                   </h3>
                   <ExportExcelButton 
                     data={{
@@ -91,7 +108,7 @@ export const HermiteInterpolationPage: React.FC = () => {
                         <th style={{ padding: '0.75rem' }}>z_i</th>
                         <th style={{ padding: '0.75rem' }}>f[z_i]</th>
                         {data.tabla[0].slice(2).map((_, i) => (
-                          <th key={i}>Orden {i + 1}</th>
+                          <th key={i} style={{ padding: '0.75rem' }}>Orden {i + 1}</th>
                         ))}
                       </tr>
                     </thead>
@@ -107,7 +124,8 @@ export const HermiteInterpolationPage: React.FC = () => {
                                   padding: '0.75rem', 
                                   fontWeight: isCoefficient ? 'bold' : 'normal', 
                                   color: isCoefficient ? '#3b82f6' : (valor === null ? 'transparent' : 'inherit'),
-                                  backgroundColor: isCoefficient ? '#eff6ff' : 'transparent'
+                                  backgroundColor: isCoefficient ? '#eff6ff' : 'transparent',
+                                  whiteSpace: 'nowrap'
                                 }}
                               >
                                 {valor !== null ? (typeof valor === 'number' ? valor.toFixed(4) : valor) : ''}
@@ -129,9 +147,9 @@ export const HermiteInterpolationPage: React.FC = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   {data.pasos.map((paso, idx) => (
                     <div key={idx} style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', borderLeft: '4px solid #3b82f6', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}>
-                      <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', backgroundColor: '#eff6ff', color: '#3b82f6', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Paso {idx + 1}</span>
+                      <span style={{ display: 'inline-block', padding: '0.25rem 0.75rem', backgroundColor: '#eff6ff', color: '#3b82f6', borderRadius:9999, fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.75rem' }}>Paso {idx + 1}</span>
                       <p style={{ fontWeight: 500, color: '#475569', marginBottom: '1rem' }}>{paso.descripcion}</p>
-                      <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                      <div style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '8px', overflowX: 'auto' }}>
                         <MathRenderer math={paso.formula} block />
                       </div>
                     </div>
@@ -157,18 +175,6 @@ export const HermiteInterpolationPage: React.FC = () => {
                     <MathRenderer math={`P(${data.valor_evaluado.x}) = ${data.valor_evaluado.y.toFixed(6)}`} />
                   </div>
                 )}
-              </div>
-
-              {/* 4. Gráfica */}
-              <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', marginBottom: '2rem' }}>
-                <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#1e293b', marginBottom: '1rem' }}>
-                  Representación Gráfica
-                </h3>
-                <InterpolationChart 
-                  puntosX={data.puntos_x}
-                  puntosY={data.puntos_y}
-                  polinomioLatex={data.polinomio_reducido_latex.replace('P(x) = ', '')}
-                />
               </div>
             </>
           ) : (
