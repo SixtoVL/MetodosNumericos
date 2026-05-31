@@ -2,16 +2,62 @@ from fastapi import HTTPException
 from methods.interpolation.divided_differences import divided_differences_method
 from methods.interpolation.finite_differences import finite_differences_method
 from methods.interpolation.hermite import hermite_method
+from methods.interpolation.lagrange import lagrange_method
 from schemas.interpolation_schema import InterpolationSchema, HermiteRequest
 import logging
 import numpy as np
 import json
+import sympy as sp
 
 logger = logging.getLogger("InterpolationController")
 
-import sympy as sp
-from methods.newton.helpers.parser_matematico import parsear_funcion
-from schemas.interpolation_schema import InterpolationSchema, HermiteRequest, HermitePoint
+def solve_lagrange(data: InterpolationSchema):
+    input_json = json.dumps(data.model_dump(), indent=2, ensure_ascii=False)
+    logger.info(f"--- NUEVA PETICIÓN (Lagrange) ---\n{input_json}")
+    
+    try:
+        # 1. Validaciones básicas
+        x_values = [p.x for p in data.puntos]
+        if len(x_values) != len(set(x_values)):
+            raise HTTPException(status_code=400, detail="Los valores de x deben ser distintos entre sí.")
+            
+        if len(data.puntos) < 2:
+            raise HTTPException(status_code=400, detail="Se necesitan al menos 2 puntos para interpolar.")
+
+        # 2. Ejecutar el método
+        resultado = lagrange_method(data.puntos)
+        p_poly = resultado.pop("p_poly") # Extraer el objeto sympy para uso interno
+        x_sym = sp.Symbol('x')
+
+        # 3. Evaluación del punto si se solicita
+        if data.x_a_evaluar is not None:
+            xa = data.x_a_evaluar
+            val_ev = float(p_poly.subs(x_sym, xa))
+            resultado["valor_evaluado"] = {"x": xa, "y": val_ev}
+
+        # 4. Generación de puntos para la curva
+        x_min = min(x_values)
+        x_max = max(x_values)
+        rango = x_max - x_min
+        padding = rango * 0.2 if rango > 0 else 1.0
+        
+        x_plot = np.linspace(x_min - padding, x_max + padding, 200)
+        curva = []
+        for x_val in x_plot:
+            y_val = float(p_poly.subs(x_sym, x_val))
+            if abs(y_val) < 1e100:
+                curva.append({"x": float(x_val), "y": float(y_val)})
+        
+        resultado["curva"] = curva
+        
+        logger.info("Respuesta Lagrange generada exitosamente")
+        return resultado
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en solve_lagrange: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 def solve_hermite(data: HermiteRequest):
     input_json = json.dumps(data.model_dump(), indent=2, ensure_ascii=False)

@@ -10,7 +10,7 @@ interface Example {
 }
 
 interface Props {
-  method: 'newton' | 'fixed-point' | 'interpolation' | 'hermite';
+  method: 'newton' | 'fixed-point' | 'interpolation' | 'hermite' | 'lagrange';
   onSelect: (values: any) => void;
 }
 
@@ -136,6 +136,38 @@ export const ExamplesGuide: React.FC<Props> = ({ method, onSelect }) => {
           values: {
             puntos: [{ x: 0, y: 0, dy: 0 }, { x: 0.5, y: 0.5, dy: 2 }, { x: 1, y: 1, dy: 0 }],
             x_a_evaluar: 0.25
+          }
+        }
+      ];
+    }
+
+    if (method === 'lagrange') {
+      return [
+        {
+          title: "Interpolación Básica",
+          description: "3 puntos definen una parábola de forma directa.",
+          difficulty: "Fácil",
+          values: {
+            puntos: [{ x: 1, y: 1 }, { x: 2, y: 4 }, { x: 4, y: 16 }],
+            x_a_evaluar: 3
+          }
+        },
+        {
+          title: "Cálculo de Logaritmo",
+          description: "Estima ln(2) a partir de puntos conocidos de f(x)=ln(x).",
+          difficulty: "Medio",
+          values: {
+            puntos: [{ x: 1, y: 0 }, { x: 1.5, y: 0.4054 }, { x: 3, y: 1.0986 }],
+            x_a_evaluar: 2
+          }
+        },
+        {
+          title: "Polinomio de 4to Grado",
+          description: "5 puntos con valores arbitrarios para observar la oscilación.",
+          difficulty: "Avanzado",
+          values: {
+            puntos: [{ x: 0, y: 1 }, { x: 1, y: 3 }, { x: 2, y: 2 }, { x: 3, y: 5 }, { x: 4, y: 4 }],
+            x_a_evaluar: 2.5
           }
         }
       ];

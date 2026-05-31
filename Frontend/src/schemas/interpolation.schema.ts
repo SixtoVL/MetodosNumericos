@@ -28,6 +28,28 @@ export interface HermiteRequest {
   x_a_evaluar?: number;
 }
 
+export interface LagrangeRequest {
+  puntos: Point[];
+  x_a_evaluar?: number;
+}
+
+export interface LagrangeResponse {
+  pasos: Array<{
+    orden: number;
+    descripcion: string;
+    formula: string;
+  }>;
+  polinomio_latex: string;
+  polinomio_reducido_latex: string;
+  puntos_x: number[];
+  puntos_y: number[];
+  valor_evaluado?: {
+    x: number;
+    y: number;
+  };
+  curva?: Array<{x: number, y: number}>;
+}
+
 export interface DividedDifferencesResponse {
   coeficientes: number[];
   tabla: (number | null)[][];
