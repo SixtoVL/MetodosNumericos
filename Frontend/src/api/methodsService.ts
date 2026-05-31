@@ -2,6 +2,7 @@ import api from './axiosInstance';
 import type { NewtonRequest, NewtonResponse } from '../schemas/newton.schema';
 import type { FixedPointRequest, FixedPointResponse } from '../schemas/fixed_point.schema';
 import type { DividedDifferencesRequest, DividedDifferencesResponse, HermiteRequest, LagrangeRequest, LagrangeResponse } from '../schemas/interpolation.schema';
+import type { LeastSquaresRequest, LeastSquaresResponse } from '../schemas/regression.schema';
 
 export const methodsService = {
   /**
@@ -41,6 +42,14 @@ export const methodsService = {
    */
   postHermite: async (data: HermiteRequest): Promise<DividedDifferencesResponse> => {
     const response = await api.post<DividedDifferencesResponse>('/methods/interpolacion/hermite', data);
+    return response.data;
+  },
+
+  /**
+   * Ejecuta el método de Mínimos Cuadrados
+   */
+  postLeastSquares: async (data: LeastSquaresRequest): Promise<LeastSquaresResponse> => {
+    const response = await api.post<LeastSquaresResponse>('/methods/regresion/minimos-cuadrados', data);
     return response.data;
   },
 };

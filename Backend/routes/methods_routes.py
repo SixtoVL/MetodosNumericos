@@ -2,9 +2,11 @@ from fastapi import APIRouter
 from controllers.newton_controller import solve_newton
 from controllers.fixed_point_controller import solve_fixed_point
 from controllers.interpolation_controller import solve_divided_differences, solve_hermite, solve_lagrange
+from controllers.least_squares_controller import solve_least_squares
 from schemas.newton_schema import NewtonSchema
 from schemas.fixed_point_schema import FixedPointSchema
 from schemas.interpolation_schema import InterpolationSchema, HermiteRequest
+from schemas.least_squares_schema import LeastSquaresRequest
 
 router = APIRouter()
 
@@ -27,3 +29,7 @@ def lagrange_endpoint(data: InterpolationSchema):
 @router.post("/interpolacion/hermite")
 def hermite_endpoint(data: HermiteRequest):
     return solve_hermite(data)
+
+@router.post("/regresion/minimos-cuadrados")
+def minimos_cuadrados_endpoint(data: LeastSquaresRequest):
+    return solve_least_squares(data)

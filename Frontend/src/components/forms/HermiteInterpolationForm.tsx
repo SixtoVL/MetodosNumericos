@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Calculator, ListOrdered, Braces } from 'lucide-react';
+import { Plus, Trash2, Calculator, ListOrdered } from 'lucide-react';
 import type { HermiteRequest, HermitePoint } from '../../schemas/interpolation.schema';
-import styles from './NewtonForm.module.css'; // Reutilizamos estilos con toggle
+import styles from './NewtonForm.module.css';
 import clsx from 'clsx';
 
 interface Props {
@@ -10,7 +10,6 @@ interface Props {
   initialValues?: HermiteRequest;
 }
 
-// Interfaz interna para manejar el estado del formulario permitiendo strings vacíos
 interface FormHermitePoint {
   x: number | string;
   y: number | string;
@@ -18,7 +17,6 @@ interface FormHermitePoint {
 }
 
 export const HermiteInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading, initialValues }) => {
-  // Estado para puntos (permitimos string | number para poder borrar valores en el input)
   const [puntos, setPuntos] = useState<FormHermitePoint[]>(
     initialValues?.puntos?.map(p => ({
       x: p.x,
@@ -44,8 +42,7 @@ export const HermiteInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading,
   }, [initialValues]);
 
   const addPunto = () => {
-    const lastX = puntos.length > 0 ? (typeof puntos[puntos.length - 1].x === 'number' ? (puntos[puntos.length - 1].x as number) : parseFloat(puntos[puntos.length - 1].x as string) || 0) : 0;
-    setPuntos([...puntos, { x: lastX + 1, y: 0, derivadas: [] }]);
+    setPuntos([...puntos, { x: '', y: '', derivadas: [] }]);
   };
 
   const removePunto = (index: number) => {
@@ -72,23 +69,20 @@ export const HermiteInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading,
     const newPuntos = [...puntos];
     newPuntos[pIndex] = { 
       ...newPuntos[pIndex], 
-      derivadas: [...newPuntos[pIndex].derivadas, 0] 
+      derivadas: [...newPuntos[pIndex].derivadas, ''] 
     };
     setPuntos(newPuntos);
   };
 
   const removeDerivada = (pIndex: number, dIndex: number) => {
     const newPuntos = [...puntos];
-    if (newPuntos[pIndex].derivadas.length > 0) {
-      newPuntos[pIndex].derivadas = newPuntos[pIndex].derivadas.filter((_, i) => i !== dIndex);
-      setPuntos(newPuntos);
-    }
+    newPuntos[pIndex].derivadas = newPuntos[pIndex].derivadas.filter((_, i) => i !== dIndex);
+    setPuntos(newPuntos);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Convertir de FormHermitePoint a HermitePoint (todos los valores a number)
     const puntosProcesados: HermitePoint[] = puntos.map(p => ({
       x: typeof p.x === 'string' ? parseFloat(p.x) : p.x,
       y: typeof p.y === 'string' ? parseFloat(p.y) : p.y,
@@ -103,92 +97,74 @@ export const HermiteInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading,
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      <header className={styles.header}>
         <div className={styles.titleGroup}>
           <div className={styles.iconBox}>
             <Calculator size={20} />
           </div>
-          <h2>Interpolación de Hermite</h2>
+          <h2>Configuración Hermite</h2>
         </div>
-      </div>
+      </header>
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.formSection}>
+        <section className={styles.formSection}>
           <div className={styles.sectionHeader}>
             <div className={styles.sectionTitle}>
               <ListOrdered size={18} />
-              <h3>Puntos de Datos</h3>
+              <h3>Puntos y Derivadas</h3>
             </div>
             <button type="button" onClick={addPunto} className={styles.addButtonMini}>
-              <Plus size={14} /> Punto
+              Añadir Punto
             </button>
           </div>
 
           <div className={styles.listContainer}>
             {puntos.map((punto, pIdx) => (
-              <div key={pIdx} style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                <div className={styles.itemRow} style={{ marginBottom: '0.75rem' }}>
-                  <span className={styles.itemIndex}>P{pIdx}</span>
-                  <div className={styles.field} style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.7rem' }}>x</label>
+              <div key={pIdx} className={styles.hermitePointCard} style={{ backgroundColor: '#f8fafc', padding: '1rem', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '1.25rem' }}>
+                <div className={styles.itemRow} style={{ marginBottom: '0.75rem', gap: '0.75rem' }}>
+                  <span className={styles.itemIndex}>{pIdx}</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', flex: 1 }}>
                     <input 
-                      type="number" step="any" value={punto.x} 
+                      type="number" step="any" placeholder="x" value={punto.x} 
                       onChange={(e) => updatePuntoField(pIdx, 'x', e.target.value)}
                       className={styles.mainInput}
                       required
                     />
-                  </div>
-                  <div className={styles.field} style={{ flex: 1 }}>
-                    <label style={{ fontSize: '0.7rem' }}>f(x)</label>
                     <input 
-                      type="number" step="any" value={punto.y} 
+                      type="number" step="any" placeholder="f(x)" value={punto.y} 
                       onChange={(e) => updatePuntoField(pIdx, 'y', e.target.value)}
                       className={styles.mainInput}
                       required
                     />
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '80px', padding: '0 0.5rem' }}>
-                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Nodos</span>
-                    <div style={{ backgroundColor: '#3b82f6', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: 700 }}>
-                      {punto.derivadas.length + 1}
-                    </div>
                   </div>
                   <button type="button" onClick={() => removePunto(pIdx)} className={styles.removeButton} disabled={puntos.length <= 1}>
                     <Trash2 size={16} />
                   </button>
                 </div>
                 
-                <div style={{ paddingLeft: '2.5rem' }}>
+                <div style={{ marginLeft: '2.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Información adicional</span>
-                      <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>(Derivadas)</span>
-                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>Derivadas en x_{pIdx}</span>
                     <button 
                       type="button" 
                       onClick={() => addDerivada(pIdx)} 
-                      className={styles.addButtonMini} 
+                      className={styles.addButtonMini}
                       style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}
-                      disabled={punto.derivadas.length >= 2}
                     >
-                      <Plus size={12} /> Derivada
+                      + Derivada
                     </button>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                     {punto.derivadas.length === 0 && (
-                      <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic', margin: 0 }}>
-                        Solo valor de la función (1 repetición).
-                      </p>
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontStyle: 'italic' }}>Sin derivadas adicionales</span>
                     )}
                     {punto.derivadas.map((der, dIdx) => (
                       <div key={dIdx} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', background: 'white', padding: '0.25rem 0.5rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#3b82f6' }}>
-                          f{dIdx === 0 ? "'" : "''"}(x)
-                        </span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#3b82f6' }}>f{Array(dIdx + 1).fill("'").join('')}</span>
                         <input 
                           type="number" step="any" value={der} 
                           onChange={(e) => updateDerivada(pIdx, dIdx, e.target.value)}
-                          style={{ width: '70px', border: 'none', fontSize: '0.85rem', outline: 'none', fontWeight: 500 }}
+                          style={{ width: '60px', border: 'none', fontSize: '0.8rem', outline: 'none', fontWeight: 500 }}
                           required
                         />
                         <button type="button" onClick={() => removeDerivada(pIdx, dIdx)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -201,10 +177,10 @@ export const HermiteInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading,
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
         <div className={styles.footerParams}>
-          <div className={styles.field}>
+          <div className={styles.field} style={{ marginBottom: '1.5rem' }}>
             <label>Punto a evaluar (opcional)</label>
             <input 
               type="number" step="any" value={xEval} 
@@ -213,17 +189,15 @@ export const HermiteInterpolationForm: React.FC<Props> = ({ onSubmit, isLoading,
               className={styles.mainInput}
             />
           </div>
-        </div>
 
-        <button 
-          type="submit" 
-          className={styles.submitButton} 
-          disabled={isLoading}
-          style={{ marginTop: '1.5rem' }}
-        >
-          {isLoading ? 'Calculando...' : 'Calcular Hermite'}
-          <Calculator size={18} />
-        </button>
+          <button 
+            type="submit" 
+            className={styles.submitButton} 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Calculando...' : 'Calcular Hermite'}
+          </button>
+        </div>
       </form>
     </div>
   );

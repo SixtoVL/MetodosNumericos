@@ -11,6 +11,7 @@ import InterpolationTheory from './pages/methods/interpolation/InterpolationTheo
 import { NewtonInterpolationPage } from './pages/methods/interpolation/NewtonInterpolationPage';
 import { HermiteInterpolationPage } from './pages/methods/interpolation/HermiteInterpolationPage';
 import { LagrangeInterpolationPage } from './pages/methods/interpolation/LagrangeInterpolationPage';
+import { LeastSquaresPage } from './pages/methods/regression/LeastSquaresPage';
 import { Menu } from 'lucide-react';
 import './App.css';
 
@@ -59,6 +60,7 @@ function App() {
               <Route path="/metodos/interpolacion/newton" element={<NewtonInterpolationPage />} />
               <Route path="/metodos/interpolacion/lagrange" element={<LagrangeInterpolationPage />} />
               <Route path="/metodos/interpolacion/hermite" element={<HermiteInterpolationPage />} />
+              <Route path="/metodos/regresion/minimos-cuadrados" element={<LeastSquaresPage />} />
               <Route path="*" element={<HomePage />} />
             </Routes>
           </main>

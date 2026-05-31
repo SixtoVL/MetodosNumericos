@@ -12,6 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const [isNewtonOpen, setIsNewtonOpen] = useState(true);
   const [isFixedPointOpen, setIsFixedPointOpen] = useState(false);
   const [isInterpolationOpen, setIsInterpolationOpen] = useState(false);
+  const [isRegressionOpen, setIsRegressionOpen] = useState(false);
 
   const toggleNewton = () => {
     setIsNewtonOpen(!isNewtonOpen);
@@ -23,6 +24,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
   const toggleInterpolation = () => {
     setIsInterpolationOpen(!isInterpolationOpen);
+  };
+
+  const toggleRegression = () => {
+    setIsRegressionOpen(!isRegressionOpen);
   };
 
   return (
@@ -113,6 +118,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </NavLink>
               <NavLink to="/metodos/interpolacion/lagrange" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
                 <Calculator size={18} /> Interpolación de Lagrange
+              </NavLink>
+            </div>
+          )}
+
+          {/* Regresión */}
+          <div 
+            className={styles.methodTitle} 
+            onClick={toggleRegression}
+            style={{ cursor: 'pointer', userSelect: 'none', marginTop: '0.5rem' }}
+          >
+            {isRegressionOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            Regresión
+          </div>
+          
+          {isRegressionOpen && (
+            <div className={styles.subMenu}>
+              <NavLink to="/metodos/regresion/minimos-cuadrados" onClick={onClose} className={({isActive}) => isActive ? styles.active : ''}>
+                <Calculator size={18} /> Mínimos Cuadrados
               </NavLink>
             </div>
           )}
